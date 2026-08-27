@@ -64,9 +64,9 @@ export const OrbitalPropertiesSchema = z.object({
   eccentricity: z.number().min(0).max(1).optional(),
   orbitalPeriodDays: z.number().positive().optional(),
   inclinationDeg: z.number().min(0).max(180).optional(),
-  longitudeAscendingNodeDeg: z.number().min(0).max(360).optional(),
-  argumentPeriapsisDeg: z.number().min(0).max(360).optional(),
-  meanAnomalyDeg: z.number().min(0).max(360).optional(),
+  longitudeAscendingNodeDeg: z.number().min(-360).max(360).optional(),
+  argumentPeriapsisDeg: z.number().min(-360).max(360).optional(),
+  meanAnomalyDeg: z.number().min(-360).max(360).optional(),
   epochJulianDate: z.number().positive().optional(),
 });
 
