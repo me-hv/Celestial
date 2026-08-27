@@ -4,7 +4,7 @@ This document outlines the phased development path for **CELESTIAL**.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
-│  Phase 0: Foundation & Architecture  [CURRENT]                         │
+│  Phase 0: Foundation & Architecture  [COMPLETED]                       │
 │  - Clean TypeScript + Next.js architecture                             │
 │  - Generalized CelestialObject domain model & Zod validation           │
 │  - Database schema & scientific provenance specification               │
@@ -15,12 +15,13 @@ This document outlines the phased development path for **CELESTIAL**.
                                     │
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│  Phase 1: Solar System Explorer                                        │
-│  - 3D Interactive Solar System View (Sun, 8 planets, major moons)      │
-│  - Keplerian orbit rendering & real-time time-scrubbing engine         │
-│  - Authoritative Solar System dataset ingestion (NASA JPL Horizons)    │
-│  - Celestial object detail view & scientific telemetry cards           │
-│  - Keyboard navigation & camera target transitions                     │
+│  Phase 1: Solar System Explorer  [COMPLETED]                           │
+│  - Interactive 3D Solar System (Sun, 8 planets, Earth's Moon)          │
+│  - Keplerian orbit mechanics solver & calibrated dual-scale engine     │
+│  - Authoritative NASA JPL SSD ephemeris dataset & provenance citations │
+│  - Interactive object selection, smooth camera focus & orbit toggles   │
+│  - Floating telemetry data cards & dedicated /objects/[slug] profiles  │
+│  - Real-time search with multi-catalog alias resolution (Terra, Luna)  │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼

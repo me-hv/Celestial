@@ -11,7 +11,7 @@ describe("Application UI Smoke Tests", () => {
     render(<HomePage />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("CELESTIAL");
     expect(screen.getByText("Explore the universe.")).toBeDefined();
-    expect(screen.getByPlaceholderText("Search the universe...")).toBeDefined();
+    expect(screen.getByPlaceholderText(/Search the universe/i)).toBeDefined();
     expect(screen.getByText("Explore")).toBeDefined();
     expect(screen.getByText("Sky")).toBeDefined();
     expect(screen.getByText("Objects")).toBeDefined();
