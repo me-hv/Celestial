@@ -4,8 +4,31 @@ import { CelestialCategory, CelestialClassificationCode } from "./classification
 
 export const ObjectAliasSchema = z.object({
   name: z.string().min(1),
-  type: z.enum(["COMMON", "BAYER", "FLAMSTEED", "CATALOG", "HISTORICAL", "EXOPLANET_LETTER"]),
+  type: z.enum([
+    "COMMON",
+    "BAYER",
+    "FLAMSTEED",
+    "CATALOG",
+    "HISTORICAL",
+    "EXOPLANET_LETTER",
+    "GAIA",
+    "HIP",
+    "HD",
+    "GLIESE",
+  ]),
   sourceCatalog: z.string().optional(),
+});
+
+export const CatalogIdentifiersSchema = z.object({
+  gaiaDr3: z.string().optional(),
+  hip: z.string().optional(),
+  hd: z.string().optional(),
+  gliese: z.string().optional(),
+  bayer: z.string().optional(),
+  flamsteed: z.string().optional(),
+  sao: z.string().optional(),
+  hr: z.string().optional(),
+  twoMass: z.string().optional(),
 });
 
 export const ScientificMeasurementSchema = z.object({
@@ -41,11 +64,26 @@ export const PhysicalPropertiesSchema = z.object({
   metallicityDex: z.number().optional(),
   surfaceGravityLogG: z.number().optional(),
 
+  // Photometry
+  apparentMagnitudeV: z.number().optional(),
+  apparentMagnitudeG: z.number().optional(),
+  absoluteMagnitudeV: z.number().optional(),
+  absoluteMagnitudeG: z.number().optional(),
+  colorIndexBMinusV: z.number().optional(),
+  colorIndexBpMinusRp: z.number().optional(),
+
+  // Stellar Evolution & Multiplicity
+  stellarAgeGyr: z.number().min(0).optional(),
+  variabilityType: z.string().optional(),
+  isMultipleStarMember: z.boolean().optional(),
+  multipleStarSystemSlug: z.string().optional(),
+  constellation: z.string().optional(),
+
   morphologicalType: z.string().optional(),
   atmosphereComposition: z
     .array(
       z.object({
-        molecule: z.string().min(1),
+        molecule: z.string(),
         percentage: z.number().min(0).max(100),
       })
     )
@@ -61,6 +99,9 @@ export const PhysicalPropertiesSchema = z.object({
       luminositySolar: ScientificMeasurementSchema.optional(),
       stellarRadiusSolar: ScientificMeasurementSchema.optional(),
       stellarMassSolar: ScientificMeasurementSchema.optional(),
+      parallaxMas: ScientificMeasurementSchema.optional(),
+      distanceParsecs: ScientificMeasurementSchema.optional(),
+      apparentMagnitudeV: ScientificMeasurementSchema.optional(),
     })
     .optional(),
 });
@@ -73,6 +114,23 @@ export const PositionalPropertiesSchema = z.object({
   distanceAu: z.number().min(0).optional(),
   distanceKm: z.number().min(0).optional(),
   epoch: z.string().optional(),
+  referenceFrame: z.enum(["ICRS", "FK5"]).optional(),
+
+  // Astrometry
+  parallaxMas: z.number().optional(),
+  parallaxErrorMas: z.number().min(0).optional(),
+  properMotionRaMasYr: z.number().optional(),
+  properMotionDecMasYr: z.number().optional(),
+  radialVelocityKmS: z.number().optional(),
+
+  cartesianCoordinatesPc: z
+    .object({
+      x: z.number(),
+      y: z.number(),
+      z: z.number(),
+    })
+    .optional(),
+
   distanceUncertainty: z
     .object({
       upper: z.number().optional(),
@@ -88,27 +146,40 @@ export const OrbitalPropertiesSchema = z.object({
   orbitalPeriodDays: z.number().positive().optional(),
   orbitalPeriodYears: z.number().positive().optional(),
   inclinationDeg: z.number().min(0).max(180).optional(),
-  longitudeAscendingNodeDeg: z.number().min(-360).max(360).optional(),
-  argumentPeriapsisDeg: z.number().min(-360).max(360).optional(),
-  meanAnomalyDeg: z.number().min(-360).max(360).optional(),
-  epochJulianDate: z.number().positive().optional(),
-  transitMidpointJulianDate: z.number().positive().optional(),
+  longitudeAscendingNodeDeg: z.number().min(0).max(360).optional(),
+  argumentPeriapsisDeg: z.number().min(0).max(360).optional(),
+  meanAnomalyDeg: z.number().min(0).max(360).optional(),
+  epochJulianDate: z.number().optional(),
+  transitMidpointJulianDate: z.number().optional(),
+
   orbitalPeriodUncertainty: z
-    .object({ upper: z.number().optional(), lower: z.number().optional() })
+    .object({
+      upper: z.number().optional(),
+      lower: z.number().optional(),
+    })
     .optional(),
   semiMajorAxisUncertainty: z
-    .object({ upper: z.number().optional(), lower: z.number().optional() })
+    .object({
+      upper: z.number().optional(),
+      lower: z.number().optional(),
+    })
     .optional(),
   eccentricityUncertainty: z
-    .object({ upper: z.number().optional(), lower: z.number().optional() })
+    .object({
+      upper: z.number().optional(),
+      lower: z.number().optional(),
+    })
     .optional(),
   inclinationUncertainty: z
-    .object({ upper: z.number().optional(), lower: z.number().optional() })
+    .object({
+      upper: z.number().optional(),
+      lower: z.number().optional(),
+    })
     .optional(),
 });
 
 export const DiscoveryInfoSchema = z.object({
-  year: z.number().int().min(0).max(2100).optional(),
+  year: z.number().int().optional(),
   discoveredBy: z.string().optional(),
   method: z
     .enum([
@@ -146,10 +217,11 @@ export const CelestialObjectSchema = z.object({
   standardDesignation: z.string().optional(),
   classification: CelestialClassificationSchema,
   aliases: z.array(ObjectAliasSchema),
+  catalogIdentifiers: CatalogIdentifiersSchema.optional(),
 
   parentId: z.string().uuid().optional(),
   hostSystemId: z.string().optional(),
-  hostGalaxyId: z.string().uuid().optional(),
+  hostGalaxyId: z.string().optional(),
   childObjectIds: z.array(z.string().uuid()).optional(),
 
   physical: PhysicalPropertiesSchema,
@@ -162,3 +234,5 @@ export const CelestialObjectSchema = z.object({
   summary: z.string().optional(),
   isFeatured: z.boolean().optional(),
 });
+
+export type ValidatedCelestialObject = z.infer<typeof CelestialObjectSchema>;

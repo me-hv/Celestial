@@ -38,19 +38,22 @@ This document outlines the phased development path for **CELESTIAL**.
                                     │
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│  Phase 3: Deep Sky, Galaxies & Space Missions                          │
-│  - Messier & NGC catalog visualization (Nebulae, Star Clusters)        │
-│  - Milky Way structure & Local Group macro view                        │
-│  - Historic & active space missions (Voyager, JWST, Cassini, Artemis)  │
-│  - Trajectory replay and milestone timeline view                       │
+│  Phase 3: Stellar Neighborhood & Star Catalog  [COMPLETED]             │
+│  - Authoritative Gaia DR3 & SIMBAD/CNS star catalog ingestion          │
+│  - Pure astrometric coordinate math (RA, Dec, Parallax to 3D ICRS)     │
+│  - Multi-catalog identifier resolution (Gaia DR3, HIP, HD, GJ, Bayer)  │
+│  - Interactive 3D Stellar Neighborhood scene (Sun-centered 25 pc)      │
+│  - Visual reference distance shells (5 pc, 10 pc, 20 pc) & labels      │
+│  - Stellar Atlas (/stars) with 3D/Catalog views, filtering, pagination │
+│  - Dedicated /stars/[slug] profiles with planetary system bridges      │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│  Phase 4: Scientific Atlas & Community Exploration                    │
-│  - Constellation overlays & night sky observer mode                    │
-│  - Interactive astronomical calculator (Delta-V, transit timing)       │
-│  - Custom observation bookmarks & scientific paper citations           │
-│  - Performance optimization (LOD WebGPU shaders, instanced rendering)  │
+│  Phase 4: Deep Sky, Galaxies & Space Missions                          │
+│  - Messier & NGC catalog visualization (Nebulae, Star Clusters)        │
+│  - Milky Way structure & Local Group macro view                        │
+│  - Historic & active space missions (Voyager, JWST, Cassini, Artemis)  │
+│  - Trajectory replay and milestone timeline view                       │
 └────────────────────────────────────────────────────────────────────────┘
 ```

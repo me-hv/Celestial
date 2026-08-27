@@ -1,6 +1,7 @@
 import { CelestialObject } from "@/domain/celestial-object/types";
 import { SOLAR_SYSTEM_OBJECTS } from "./solar-system-data";
 import { EXOPLANET_CELESTIAL_OBJECTS } from "./exoplanet-systems-data";
+import { STELLAR_CATALOG_OBJECTS } from "./stellar-catalog-data";
 import { InMemorySearchProvider } from "@/features/search/in-memory-search.provider";
 import { SearchQuery } from "@/features/search/types";
 
@@ -9,9 +10,22 @@ export class CelestialObjectRepository {
   private readonly searchProvider: InMemorySearchProvider;
 
   constructor() {
-    const allObjects = [...SOLAR_SYSTEM_OBJECTS, ...EXOPLANET_CELESTIAL_OBJECTS];
+    const rawList = [
+      ...SOLAR_SYSTEM_OBJECTS,
+      ...EXOPLANET_CELESTIAL_OBJECTS,
+      ...STELLAR_CATALOG_OBJECTS,
+    ];
 
-    // Populate objects map by both ID and Slug
+    // Deduplicate by ID and Slug
+    const uniqueObjects = new Map<string, CelestialObject>();
+    rawList.forEach((obj) => {
+      if (!uniqueObjects.has(obj.slug)) {
+        uniqueObjects.set(obj.slug, obj);
+      }
+    });
+
+    const allObjects = Array.from(uniqueObjects.values());
+
     allObjects.forEach((obj) => {
       this.objects.set(obj.id, obj);
       this.objects.set(obj.slug, obj);

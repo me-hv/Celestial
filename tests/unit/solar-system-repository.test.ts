@@ -57,7 +57,7 @@ describe("CelestialObjectRepository & Solar System Data Model", () => {
   it("retains scientific provenance across all objects", () => {
     const all = celestialRepo.getAll();
     for (const obj of all) {
-      expect(obj.provenance.authoritativeBody).toBe("NASA");
+      expect(["NASA", "GAIA"]).toContain(obj.provenance.authoritativeBody);
       expect(obj.provenance.confidenceScore).toBeGreaterThanOrEqual(0.99);
       expect(obj.provenance.recordIdentifier).toBeDefined();
     }
