@@ -1,0 +1,40 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Testing & Coverage
+/coverage
+/playwright-report
+/test-results
+
+# Next.js Build
+/.next/
+/out/
+
+# Production
+/build
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local Environment Variables
+.env*.local
+.env
+!.env.example
+
+# Vercel & Supabase Local
+.vercel
+.supabase
+
+# IDE & OS
+.DS_Store
+*.pem
+.idea
+.vscode
+*.sublime-workspace
+Thumbs.db
