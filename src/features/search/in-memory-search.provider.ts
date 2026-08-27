@@ -62,28 +62,47 @@ export class InMemorySearchProvider implements ISearchProvider {
         bestScore = Math.max(bestScore, 0.75);
       }
 
-      // Check aliases
-      for (const alias of obj.aliases) {
-        const aliasLower = alias.name.toLowerCase();
-        if (aliasLower === rawQuery) {
-          if (0.9 > bestScore) {
-            bestScore = 0.9;
-            matchedAlias = alias.name;
-          }
-        } else if (aliasLower.includes(rawQuery)) {
-          if (0.6 > bestScore) {
-            bestScore = 0.6;
-            matchedAlias = alias.name;
+      // Check aliases safely
+      if (Array.isArray(obj.aliases)) {
+        for (const alias of obj.aliases) {
+          const aliasName = typeof alias === "string" ? alias : alias?.name;
+          if (!aliasName) continue;
+          const aliasLower = aliasName.toLowerCase();
+          if (aliasLower === rawQuery) {
+            if (0.9 > bestScore) {
+              bestScore = 0.9;
+              matchedAlias = aliasName;
+            }
+          } else if (aliasLower.includes(rawQuery)) {
+            if (0.6 > bestScore) {
+              bestScore = 0.6;
+              matchedAlias = aliasName;
+            }
           }
         }
       }
 
       if (bestScore > 0) {
+        let objectType: SearchResultItem["objectType"] = "PLANET";
+        if (obj.classification.code === "STAR") {
+          objectType = "STAR";
+        } else if (
+          obj.classification.category === "PLANETARY" &&
+          obj.hostSystemId &&
+          obj.hostSystemId !== "solar-system" &&
+          obj.hostSystemId !== "f0000000-0000-4000-8000-000000000001"
+        ) {
+          objectType = "EXOPLANET";
+        } else if (obj.classification.code === "MOON") {
+          objectType = "MOON";
+        }
+
         scoredResults.push({
           id: obj.id,
           slug: obj.slug,
           canonicalName: obj.canonicalName,
           standardDesignation: obj.standardDesignation,
+          objectType,
           category: obj.classification.category,
           classificationCode: obj.classification.code,
           matchedAlias,
@@ -97,7 +116,7 @@ export class InMemorySearchProvider implements ISearchProvider {
     // Sort by score descending, then alphabetically by canonical name
     scoredResults.sort((a, b) => {
       if (b.matchScore !== a.matchScore) {
-        return b.matchScore - a.matchScore;
+        return (b.matchScore ?? 0) - (a.matchScore ?? 0);
       }
       return a.canonicalName.localeCompare(b.canonicalName);
     });

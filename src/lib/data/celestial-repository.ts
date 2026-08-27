@@ -1,40 +1,31 @@
 import { CelestialObject } from "@/domain/celestial-object/types";
-import { SOLAR_SYSTEM_OBJECTS, SOLAR_SYSTEM_IDS } from "./solar-system-data";
+import { SOLAR_SYSTEM_OBJECTS } from "./solar-system-data";
+import { EXOPLANET_CELESTIAL_OBJECTS } from "./exoplanet-systems-data";
 import { InMemorySearchProvider } from "@/features/search/in-memory-search.provider";
-import { SearchQueryOptions, SearchResponse } from "@/features/search/types";
+import { SearchQuery } from "@/features/search/types";
 
 export class CelestialObjectRepository {
-  private static instance: CelestialObjectRepository;
-  private objects: Map<string, CelestialObject> = new Map();
-  private slugIndex: Map<string, CelestialObject> = new Map();
-  private searchProvider: InMemorySearchProvider;
+  private readonly objects: Map<string, CelestialObject> = new Map();
+  private readonly searchProvider: InMemorySearchProvider;
 
-  private constructor() {
-    this.searchProvider = new InMemorySearchProvider();
-    this.initializeData(SOLAR_SYSTEM_OBJECTS);
-  }
+  constructor() {
+    const allObjects = [...SOLAR_SYSTEM_OBJECTS, ...EXOPLANET_CELESTIAL_OBJECTS];
 
-  public static getInstance(): CelestialObjectRepository {
-    if (!CelestialObjectRepository.instance) {
-      CelestialObjectRepository.instance = new CelestialObjectRepository();
-    }
-    return CelestialObjectRepository.instance;
-  }
+    // Populate objects map by both ID and Slug
+    allObjects.forEach((obj) => {
+      this.objects.set(obj.id, obj);
+      this.objects.set(obj.slug, obj);
+    });
 
-  private initializeData(data: CelestialObject[]): void {
-    this.objects.clear();
-    this.slugIndex.clear();
-
-    for (const item of data) {
-      this.objects.set(item.id, item);
-      this.slugIndex.set(item.slug.toLowerCase(), item);
-    }
-
-    this.searchProvider.setIndex(Array.from(this.objects.values()));
+    this.searchProvider = new InMemorySearchProvider(allObjects);
   }
 
   public getAll(): CelestialObject[] {
-    return Array.from(this.objects.values());
+    const uniqueMap = new Map<string, CelestialObject>();
+    this.objects.forEach((obj) => {
+      uniqueMap.set(obj.id, obj);
+    });
+    return Array.from(uniqueMap.values());
   }
 
   public getById(id: string): CelestialObject | undefined {
@@ -42,22 +33,44 @@ export class CelestialObjectRepository {
   }
 
   public getBySlug(slug: string): CelestialObject | undefined {
-    return this.slugIndex.get(slug.trim().toLowerCase());
+    return this.objects.get(slug);
+  }
+
+  public getByHostSystem(systemIdOrSlug: string): CelestialObject[] {
+    return this.getAll().filter(
+      (obj) =>
+        obj.hostSystemId === systemIdOrSlug ||
+        obj.hostSystemId === this.objects.get(systemIdOrSlug)?.id
+    );
+  }
+
+  public getPlanets(hostSystemId?: string): CelestialObject[] {
+    return this.getAll().filter((obj) => {
+      const isPlanet =
+        obj.classification.category === "PLANETARY" && obj.classification.code !== "MOON";
+      if (!isPlanet) return false;
+      if (hostSystemId) {
+        return (
+          obj.hostSystemId === hostSystemId ||
+          obj.hostSystemId === this.objects.get(hostSystemId)?.id
+        );
+      }
+      return true;
+    });
+  }
+
+  public getStars(): CelestialObject[] {
+    return this.getAll().filter((obj) => obj.classification.code === "STAR");
   }
 
   public getChildrenOf(parentId: string): CelestialObject[] {
     return this.getAll().filter((obj) => obj.parentId === parentId);
   }
 
-  public getPlanets(): CelestialObject[] {
-    return this.getAll().filter(
-      (obj) => obj.parentId === SOLAR_SYSTEM_IDS.SUN && obj.classification.category === "PLANETARY"
-    );
-  }
-
-  public async search(options: SearchQueryOptions): Promise<SearchResponse> {
-    return this.searchProvider.search(options);
+  public async search(query: SearchQuery) {
+    return this.searchProvider.search(query);
   }
 }
 
-export const celestialRepo = CelestialObjectRepository.getInstance();
+// Global Singleton Repository Instance
+export const celestialRepo = new CelestialObjectRepository();

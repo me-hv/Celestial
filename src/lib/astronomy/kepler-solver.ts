@@ -3,9 +3,9 @@ import { J2000_EPOCH_JD } from "./constants";
 export interface KeplerianElements {
   semiMajorAxisAu: number;
   eccentricity: number;
-  inclinationDeg: number;
-  longitudeAscendingNodeDeg: number;
-  argumentPeriapsisDeg: number;
+  inclinationDeg?: number;
+  longitudeAscendingNodeDeg?: number;
+  argumentPeriapsisDeg?: number;
   meanAnomalyEpochDeg?: number;
   orbitalPeriodDays?: number;
   epochJulianDate?: number;
@@ -70,7 +70,7 @@ export function solveKeplerEquation(
 }
 
 /**
- * Calculates the exact 3D Heliocentric Ecliptic coordinate vector for a Keplerian body at a given Julian Date
+ * Calculates the exact 3D Heliocentric / Stellar coordinate vector for a Keplerian body at a given Julian Date
  */
 export function calculateHeliocentricPosition(
   elements: KeplerianElements,
@@ -78,10 +78,10 @@ export function calculateHeliocentricPosition(
 ): HeliocentricEclipticPosition {
   const {
     semiMajorAxisAu: a,
-    eccentricity: e,
-    inclinationDeg,
-    longitudeAscendingNodeDeg,
-    argumentPeriapsisDeg,
+    eccentricity: e = 0,
+    inclinationDeg = 0,
+    longitudeAscendingNodeDeg = 0,
+    argumentPeriapsisDeg = 0,
     meanAnomalyEpochDeg = 0,
     orbitalPeriodDays,
     epochJulianDate = J2000_EPOCH_JD,
@@ -90,13 +90,13 @@ export function calculateHeliocentricPosition(
   // Mean motion in radians per day (from Kepler's 3rd law n = 2*PI / P or n = 0.9856076686 / a^(3/2))
   const n = orbitalPeriodDays
     ? (2 * Math.PI) / orbitalPeriodDays
-    : (0.9856076686 * DEG_TO_RAD) / Math.pow(a, 1.5);
+    : (0.9856076686 * DEG_TO_RAD) / Math.pow(Math.max(0.0001, a), 1.5);
 
   const deltaDays = targetJulianDate - epochJulianDate;
   const M_rad = (meanAnomalyEpochDeg * DEG_TO_RAD + n * deltaDays) % (2 * Math.PI);
 
   // Solve Kepler's equation for Eccentric Anomaly E
-  const E_rad = solveKeplerEquation(M_rad, e);
+  const E_rad = solveKeplerEquation(M_rad, Math.min(0.999, Math.max(0, e)));
 
   // True Anomaly nu
   const sinNu = (Math.sqrt(1 - e * e) * Math.sin(E_rad)) / (1 - e * Math.cos(E_rad));
@@ -116,10 +116,7 @@ export function calculateHeliocentricPosition(
   const xOrbital = r * Math.cos(nu_rad);
   const yOrbital = r * Math.sin(nu_rad);
 
-  // 3D Rotation to Heliocentric Ecliptic J2000 coordinates
-  // X = xOrbital * (cos(Omega)*cos(omega) - sin(Omega)*sin(omega)*cos(i)) - yOrbital * (cos(Omega)*sin(omega) + sin(Omega)*cos(omega)*cos(i))
-  // Y = xOrbital * (sin(Omega)*cos(omega) + cos(Omega)*sin(omega)*cos(i)) - yOrbital * (sin(Omega)*sin(omega) - cos(Omega)*cos(omega)*cos(i))
-  // Z = xOrbital * (sin(omega)*sin(i)) + yOrbital * (cos(omega)*sin(i))
+  // 3D Rotation to Heliocentric Ecliptic / System coordinates
   const cosOmega = Math.cos(Omega_rad);
   const sinOmega = Math.sin(Omega_rad);
   const cosOmegaSmall = Math.cos(omega_rad);
@@ -159,10 +156,10 @@ export function generateOrbitTrajectoryPoints(
   const points: Array<{ xAu: number; yAu: number; zAu: number }> = [];
   const {
     semiMajorAxisAu: a,
-    eccentricity: e,
-    inclinationDeg,
-    longitudeAscendingNodeDeg,
-    argumentPeriapsisDeg,
+    eccentricity: e = 0,
+    inclinationDeg = 0,
+    longitudeAscendingNodeDeg = 0,
+    argumentPeriapsisDeg = 0,
   } = elements;
 
   const i_rad = inclinationDeg * DEG_TO_RAD;

@@ -26,11 +26,14 @@ This document outlines the phased development path for **CELESTIAL**.
                                     │
                                     ▼
 ┌────────────────────────────────────────────────────────────────────────┐
-│  Phase 2: Stellar Systems & Exoplanets                                 │
-│  - NASA Exoplanet Archive ingestion pipeline                           │
-│  - Nearby star systems (Alpha Centauri, Trappist-1, Sirius, Vega)      │
-│  - Habitable zone visualization & transit light-curve diagrams         │
-│  - Enhanced fuzzy search across 5,000+ confirmed exoplanets            │
+│  Phase 2: Exoplanet & Stellar Systems Explorer  [COMPLETED]            │
+│  - NASA Exoplanet Archive (PS) TAP schema ingestion pipeline           │
+│  - Scientific uncertainty model (ScientificMeasurement<T> error bars)  │
+│  - Relational StellarSystem container & multi-star/barycentric models  │
+│  - Kopparapu Circumstellar Habitable Zone physics model & visualizer   │
+│  - Adaptive system scaling (Compact systems, Solar, Wide systems)      │
+│  - Interactive 3D multi-system switcher (TRAPPIST-1, Proxima, Kepler)  │
+│  - Dedicated /systems and /systems/[slug] profiles & extended search   │
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │
                                     ▼

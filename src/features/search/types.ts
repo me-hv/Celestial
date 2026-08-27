@@ -15,11 +15,13 @@ export interface SearchResultItem {
   slug: string;
   canonicalName: string;
   standardDesignation?: string;
+  objectType?: "PLANET" | "STAR" | "EXOPLANET" | "MOON" | "DEEP_SKY" | "MISSION";
   category: CelestialCategory;
   classificationCode: CelestialClassificationCode;
   matchedAlias?: string;
   matchScore: number; // 0.0 to 1.0 (relevance ranking)
   summary?: string;
+  hostSystemId?: string;
   thumbnailUrl?: string;
 }
 
@@ -29,3 +31,5 @@ export interface SearchResponse {
   query: string;
   executionTimeMs: number;
 }
+
+export type SearchQuery = SearchQueryOptions;

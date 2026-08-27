@@ -7,15 +7,14 @@ import {
   Crosshair,
   ExternalLink,
   ShieldCheck,
-  Thermometer,
   Weight,
-  Maximize2,
   Orbit,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { CelestialObject } from "@/domain/celestial-object/types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatScientificMass, formatTemperature, formatDistance } from "@/lib/utils/formatters";
 
 export interface TelemetryPanelProps {
@@ -33,20 +32,20 @@ export function TelemetryPanel({ object, onClose, onFocusCamera }: TelemetryPane
       ? "cyan"
       : object.classification.category === "STELLAR"
         ? "amber"
-        : object.classification.category === "SATELLITE"
-          ? "violet"
-          : "default";
+        : "violet";
+
+  const unc = object.physical.measurementsWithUncertainty;
 
   return (
     <aside
-      aria-label="Celestial Object Telemetry"
-      className="absolute top-4 right-4 bottom-4 w-80 sm:w-96 flex flex-col rounded-2xl border border-celestial-muted/80 bg-celestial-surface/90 backdrop-blur-xl shadow-2xl z-30 text-celestial-starlight overflow-hidden animate-in fade-in slide-in-from-right-4 duration-200"
+      aria-label="Celestial Telemetry Details"
+      className="absolute top-20 right-4 z-30 w-full max-w-sm rounded-2xl border border-celestial-muted bg-celestial-surface/90 backdrop-blur-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-200"
     >
       {/* Header */}
-      <div className="flex items-start justify-between p-5 border-b border-celestial-muted/70 bg-celestial-deep/50">
+      <div className="flex items-start justify-between p-4 border-b border-celestial-muted/80 bg-celestial-deep/60">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold font-mono tracking-tight text-celestial-starlight">
+            <h2 className="text-xl font-bold font-mono text-celestial-starlight tracking-tight">
               {object.canonicalName.toUpperCase()}
             </h2>
             <Badge variant={badgeVariant}>{object.classification.code.replace(/_/g, " ")}</Badge>
@@ -58,187 +57,219 @@ export function TelemetryPanel({ object, onClose, onFocusCamera }: TelemetryPane
         <button
           onClick={onClose}
           aria-label="Close telemetry panel"
-          className="p-1.5 rounded-lg text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted/60 transition-colors"
+          className="p-1 rounded-lg text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center gap-2 px-5 py-3 border-b border-celestial-muted/50 bg-celestial-void/40">
-        {onFocusCamera && (
-          <Button
-            variant="cyan"
-            size="sm"
-            onClick={() => onFocusCamera(object)}
-            className="flex-1 gap-1.5 text-xs"
-          >
-            <Crosshair className="w-3.5 h-3.5" />
-            <span>Focus Camera</span>
-          </Button>
-        )}
-        <Link href={`/objects/${object.slug}`} className="flex-1">
-          <Button variant="secondary" size="sm" className="w-full gap-1.5 text-xs">
-            <span>Full Profile</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Button>
-        </Link>
-      </div>
-
-      {/* Scrollable Telemetry Metrics */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 text-sm">
-        {/* Summary Description */}
+      {/* Content Body */}
+      <div className="p-4 space-y-4 max-h-[calc(100vh-14rem)] overflow-y-auto font-sans text-xs scrollbar-thin">
+        {/* Summary */}
         {object.summary && (
-          <p className="text-xs text-celestial-subtle leading-relaxed">{object.summary}</p>
+          <p className="text-celestial-subtle leading-relaxed border-b border-celestial-muted/50 pb-3">
+            {object.summary}
+          </p>
         )}
 
-        {/* Physical Metrics Grid */}
-        <div className="space-y-2.5">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-celestial-subtle">
-            Physical Telemetry
-          </span>
-          <div className="grid grid-cols-2 gap-2.5">
-            {/* Mass */}
-            <div className="p-2.5 rounded-lg bg-celestial-deep/60 border border-celestial-muted/50">
-              <div className="flex items-center gap-1.5 text-celestial-subtle text-xs mb-1">
-                <Weight className="w-3.5 h-3.5 text-celestial-cyan" />
-                <span>Mass</span>
-              </div>
-              <span className="font-mono text-xs font-semibold">
-                {formatScientificMass(object.physical.massKg)}
-              </span>
-              {object.physical.massEarth && !isStar && (
-                <div className="text-[10px] text-celestial-subtle font-mono">
-                  {object.physical.massEarth} M⊕
+        {/* Discovery Info (Exoplanets) */}
+        {object.discovery && (
+          <div className="p-3 rounded-lg border border-celestial-cyan/20 bg-celestial-cyan/5 space-y-1.5 font-mono">
+            <div className="flex items-center gap-1.5 text-celestial-cyan font-semibold text-[11px]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Discovery Context</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1 text-[11px]">
+              {object.discovery.year && (
+                <div>
+                  <span className="text-celestial-subtle">Year: </span>
+                  <span className="text-celestial-starlight">{object.discovery.year}</span>
+                </div>
+              )}
+              {object.discovery.method && (
+                <div>
+                  <span className="text-celestial-subtle">Method: </span>
+                  <span className="text-celestial-starlight">{object.discovery.method}</span>
+                </div>
+              )}
+              {object.discovery.facility && (
+                <div className="col-span-2 pt-0.5">
+                  <span className="text-celestial-subtle">Facility: </span>
+                  <span className="text-celestial-starlight">{object.discovery.facility}</span>
                 </div>
               )}
             </div>
+          </div>
+        )}
 
-            {/* Mean Radius */}
-            <div className="p-2.5 rounded-lg bg-celestial-deep/60 border border-celestial-muted/50">
-              <div className="flex items-center gap-1.5 text-celestial-subtle text-xs mb-1">
-                <Maximize2 className="w-3.5 h-3.5 text-celestial-amber" />
-                <span>Mean Radius</span>
-              </div>
-              <span className="font-mono text-xs font-semibold">
-                {object.physical.meanRadiusKm?.toLocaleString()} km
+        {/* Physical Characteristics */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5 text-celestial-cyan font-mono font-semibold text-xs">
+            <Weight className="w-3.5 h-3.5" />
+            <span>Physical Characteristics</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2 bg-celestial-deep/40 p-2.5 rounded-lg border border-celestial-muted/40 font-mono">
+            {/* Mass */}
+            <div>
+              <span className="text-[10px] text-celestial-subtle block">Mass</span>
+              <span className="font-semibold text-celestial-starlight">
+                {object.physical.massEarth ? (
+                  <>
+                    {object.physical.massEarth} M⊕
+                    {unc?.massEarth?.uncertainty && (
+                      <span className="text-[9px] text-celestial-subtle block font-normal">
+                        ±{unc.massEarth.uncertainty.upper}
+                      </span>
+                    )}
+                  </>
+                ) : object.physical.massSolar ? (
+                  `${object.physical.massSolar} M☉`
+                ) : (
+                  formatScientificMass(object.physical.massKg)
+                )}
               </span>
             </div>
 
-            {/* Surface Gravity */}
-            <div className="p-2.5 rounded-lg bg-celestial-deep/60 border border-celestial-muted/50">
-              <div className="flex items-center gap-1.5 text-celestial-subtle text-xs mb-1">
-                <Orbit className="w-3.5 h-3.5 text-celestial-violet" />
-                <span>Gravity</span>
-              </div>
-              <span className="font-mono text-xs font-semibold">
-                {object.physical.surfaceGravityMs2} m/s²
+            {/* Radius */}
+            <div>
+              <span className="text-[10px] text-celestial-subtle block">Radius</span>
+              <span className="font-semibold text-celestial-starlight">
+                {object.physical.radiusEarth ? (
+                  <>
+                    {object.physical.radiusEarth} R⊕
+                    {unc?.radiusEarth?.uncertainty && (
+                      <span className="text-[9px] text-celestial-subtle block font-normal">
+                        ±{unc.radiusEarth.uncertainty.upper}
+                      </span>
+                    )}
+                  </>
+                ) : object.physical.radiusSolar ? (
+                  `${object.physical.radiusSolar} R☉`
+                ) : (
+                  `${object.physical.meanRadiusKm?.toLocaleString()} km`
+                )}
               </span>
             </div>
 
-            {/* Mean Temperature */}
-            <div className="p-2.5 rounded-lg bg-celestial-deep/60 border border-celestial-muted/50">
-              <div className="flex items-center gap-1.5 text-celestial-subtle text-xs mb-1">
-                <Thermometer className="w-3.5 h-3.5 text-celestial-emerald" />
-                <span>Mean Temp</span>
+            {/* Temperature */}
+            {(object.physical.effectiveTemperatureK || object.physical.meanTemperatureK) && (
+              <div>
+                <span className="text-[10px] text-celestial-subtle block">
+                  {isStar ? "T_eff" : "Mean Temp"}
+                </span>
+                <span className="font-semibold text-celestial-starlight">
+                  {formatTemperature(
+                    object.physical.effectiveTemperatureK || object.physical.meanTemperatureK
+                  )}
+                </span>
               </div>
-              <span className="font-mono text-xs font-semibold">
-                {formatTemperature(object.physical.meanTemperatureK)}
+            )}
+
+            {/* Gravity or Distance */}
+            <div>
+              <span className="text-[10px] text-celestial-subtle block">
+                {object.positional.distanceLightYears !== undefined && !isStar
+                  ? "Distance (Earth)"
+                  : "Gravity"}
+              </span>
+              <span className="font-semibold text-celestial-starlight">
+                {object.positional.distanceLightYears !== undefined && !isStar
+                  ? `${object.positional.distanceLightYears.toFixed(2)} ly`
+                  : object.physical.surfaceGravityMs2
+                    ? `${object.physical.surfaceGravityMs2} m/s²`
+                    : "—"}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Orbital Mechanics (if available) */}
+        {/* Orbital Characteristics */}
         {object.orbital && (
-          <div className="space-y-2.5">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-celestial-subtle">
-              Orbital Parameters (Keplerian)
-            </span>
-            <div className="space-y-1.5 p-3 rounded-lg bg-celestial-deep/60 border border-celestial-muted/50 font-mono text-xs">
-              <div className="flex justify-between">
-                <span className="text-celestial-subtle">Semi-Major Axis:</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5 text-celestial-amber font-mono font-semibold text-xs">
+              <Orbit className="w-3.5 h-3.5" />
+              <span>Orbital Mechanics</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 bg-celestial-deep/40 p-2.5 rounded-lg border border-celestial-muted/40 font-mono">
+              <div>
+                <span className="text-[10px] text-celestial-subtle block">Semi-Major Axis</span>
                 <span className="font-semibold text-celestial-starlight">
-                  {formatDistance(
-                    object.orbital.semiMajorAxisKm,
-                    undefined,
-                    object.orbital.semiMajorAxisAu
-                  )}
+                  {formatDistance(undefined, undefined, object.orbital.semiMajorAxisAu)}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-celestial-subtle">Eccentricity:</span>
+              <div>
+                <span className="text-[10px] text-celestial-subtle block">Eccentricity</span>
                 <span className="font-semibold text-celestial-starlight">
-                  {object.orbital.eccentricity}
+                  {object.orbital.eccentricity ?? "0.00"}
                 </span>
               </div>
-              {object.orbital.orbitalPeriodDays && (
-                <div className="flex justify-between">
-                  <span className="text-celestial-subtle">Orbital Period:</span>
-                  <span className="font-semibold text-celestial-starlight">
-                    {object.orbital.orbitalPeriodDays >= 365.25
-                      ? `${(object.orbital.orbitalPeriodDays / 365.256).toFixed(2)} yr`
-                      : `${object.orbital.orbitalPeriodDays} d`}
-                  </span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span className="text-celestial-subtle">Inclination:</span>
+              <div>
+                <span className="text-[10px] text-celestial-subtle block">Period</span>
                 <span className="font-semibold text-celestial-starlight">
-                  {object.orbital.inclinationDeg}°
+                  {object.orbital.orbitalPeriodDays
+                    ? `${object.orbital.orbitalPeriodDays.toFixed(2)} d`
+                    : "—"}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-celestial-subtle block">Inclination</span>
+                <span className="font-semibold text-celestial-starlight">
+                  {object.orbital.inclinationDeg !== undefined
+                    ? `${object.orbital.inclinationDeg}°`
+                    : "—"}
                 </span>
               </div>
             </div>
           </div>
         )}
 
-        {/* Atmospheric Composition */}
-        {object.physical.atmosphereComposition &&
-          object.physical.atmosphereComposition.length > 0 && (
-            <div className="space-y-2">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-celestial-subtle">
-                Atmosphere Profile
-              </span>
-              <div className="space-y-1.5">
-                {object.physical.atmosphereComposition.map((gas) => (
-                  <div key={gas.molecule} className="space-y-0.5">
-                    <div className="flex justify-between text-xs font-mono">
-                      <span>{gas.molecule}</span>
-                      <span className="text-celestial-subtle">{gas.percentage}%</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-celestial-muted rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-celestial-cyan rounded-full"
-                        style={{ width: `${gas.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
+        {/* Provenance Citation */}
+        <div className="p-2.5 rounded-lg border border-celestial-muted/50 bg-celestial-deep/70 space-y-1">
+          <div className="flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-1 text-celestial-cyan font-mono font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>{object.provenance.authoritativeBody} Provenance</span>
             </div>
-          )}
-
-        {/* Scientific Provenance Citation Card */}
-        <div className="p-3 rounded-lg border border-celestial-cyan/20 bg-celestial-cyan/5 space-y-1.5">
-          <div className="flex items-center gap-1.5 text-celestial-cyan text-xs font-medium">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Scientific Provenance</span>
+            <span className="font-mono text-[10px] text-celestial-subtle">
+              Conf: {(object.provenance.confidenceScore * 100).toFixed(0)}%
+            </span>
           </div>
-          <p className="text-[11px] text-celestial-subtle">
-            Source: {object.provenance.catalogName} ({object.provenance.authoritativeBody})
+          <p className="text-[10px] text-celestial-subtle font-mono truncate">
+            {object.provenance.catalogName}
           </p>
           {object.provenance.citationUrl && (
             <a
               href={object.provenance.citationUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] text-celestial-cyan hover:underline font-mono"
+              className="inline-flex items-center gap-1 text-[10px] text-celestial-cyan hover:underline font-mono pt-1"
             >
-              <span>Verify at NASA JPL SSD</span>
+              <span>Source Catalog Data</span>
               <ExternalLink className="w-2.5 h-2.5" />
             </a>
           )}
         </div>
+      </div>
+
+      {/* Footer Quick Actions */}
+      <div className="p-3 border-t border-celestial-muted/80 bg-celestial-deep/80 flex items-center justify-between gap-2">
+        {onFocusCamera && (
+          <Button
+            variant="cyan"
+            size="sm"
+            onClick={() => onFocusCamera(object)}
+            className="flex-1 gap-1.5 font-mono text-xs"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
+            <span>Focus Camera</span>
+          </Button>
+        )}
+        <Link href={`/objects/${object.slug}`} className="flex-1">
+          <Button variant="secondary" size="sm" className="w-full gap-1.5 font-mono text-xs">
+            <span>Full Profile</span>
+            <ArrowRight className="w-3 h-3" />
+          </Button>
+        </Link>
       </div>
     </aside>
   );

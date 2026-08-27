@@ -16,6 +16,8 @@ export type CelestialCategory = (typeof CelestialCategory)[keyof typeof Celestia
 export const CelestialClassificationCode = {
   STAR: "STAR",
   TERRESTRIAL_PLANET: "TERRESTRIAL_PLANET",
+  SUPER_EARTH: "SUPER_EARTH",
+  EXOPLANET: "EXOPLANET",
   GAS_GIANT: "GAS_GIANT",
   ICE_GIANT: "ICE_GIANT",
   DWARF_PLANET: "DWARF_PLANET",
@@ -50,6 +52,19 @@ export const CLASSIFICATION_REGISTRY: Record<CelestialClassificationCode, Classi
       category: CelestialCategory.PLANETARY,
       displayName: "Terrestrial Planet",
       description: "Rocky planet with a solid surface and silicate or metallic core.",
+    },
+    [CelestialClassificationCode.SUPER_EARTH]: {
+      code: CelestialClassificationCode.SUPER_EARTH,
+      category: CelestialCategory.PLANETARY,
+      displayName: "Super-Earth",
+      description:
+        "Extrasolar planet with a mass higher than Earth's, but substantially below that of Uranus and Neptune.",
+    },
+    [CelestialClassificationCode.EXOPLANET]: {
+      code: CelestialClassificationCode.EXOPLANET,
+      category: CelestialCategory.PLANETARY,
+      displayName: "Exoplanet",
+      description: "Planet that orbits a star outside the Solar System.",
     },
     [CelestialClassificationCode.GAS_GIANT]: {
       code: CelestialClassificationCode.GAS_GIANT,

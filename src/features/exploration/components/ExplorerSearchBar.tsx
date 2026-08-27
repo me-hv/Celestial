@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, Orbit } from "lucide-react";
+import { Search, Sparkles, Orbit, Globe2 } from "lucide-react";
 import { CelestialObject } from "@/domain/celestial-object/types";
 import { celestialRepo } from "@/lib/data/celestial-repository";
 import { SearchResultItem } from "@/features/search/types";
@@ -26,7 +26,7 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
         return;
       }
 
-      const response = await celestialRepo.search({ query: query.trim(), limit: 6 });
+      const response = await celestialRepo.search({ query: query.trim(), limit: 7 });
       setResults(response.results);
       setIsOpen(response.results.length > 0);
     };
@@ -35,7 +35,6 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Click outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -55,6 +54,19 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
     }
   };
 
+  const getIcon = (type: SearchResultItem["objectType"]) => {
+    switch (type) {
+      case "STAR":
+        return <Sparkles className="w-4 h-4 text-celestial-amber" />;
+      case "EXOPLANET":
+        return <Orbit className="w-4 h-4 text-celestial-cyan" />;
+      case "MOON":
+        return <Orbit className="w-4 h-4 text-celestial-subtle" />;
+      default:
+        return <Globe2 className="w-4 h-4 text-celestial-cyan" />;
+    }
+  };
+
   return (
     <div ref={containerRef} className={`relative w-full max-w-md ${className}`}>
       <div className="relative flex items-center">
@@ -63,7 +75,7 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search planets, moons, aliases (e.g. Terra, Luna)..."
+          placeholder="Search stars, exoplanets (e.g. TRAPPIST-1 e, Proxima b, Mars)..."
           className="w-full h-10 pl-10 pr-10 rounded-lg border border-celestial-muted bg-celestial-surface/80 text-sm text-celestial-starlight placeholder:text-celestial-subtle/60 backdrop-blur-md focus:outline-none focus:border-celestial-cyan focus:ring-1 focus:ring-celestial-cyan font-sans"
         />
         {query && (
@@ -86,7 +98,7 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
               className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-celestial-muted/60 transition-colors text-left group"
             >
               <div className="flex items-center gap-2.5">
-                <Orbit className="w-4 h-4 text-celestial-cyan group-hover:scale-110 transition-transform" />
+                {getIcon(item.objectType)}
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-celestial-starlight">
@@ -106,7 +118,7 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
                 </div>
               </div>
               <Badge variant="outline" className="text-[10px]">
-                {item.classificationCode.replace(/_/g, " ")}
+                {item.objectType || item.classificationCode.replace(/_/g, " ")}
               </Badge>
             </button>
           ))}

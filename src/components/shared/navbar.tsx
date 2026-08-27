@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Orbit, Rocket, Sparkles, Telescope } from "lucide-react";
+import { Compass, Orbit, Rocket, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Container } from "../ui/container";
 
 const NAV_ITEMS = [
   { href: "/explore", label: "Explore", icon: Compass },
-  { href: "/sky", label: "Sky", icon: Telescope },
+  { href: "/systems", label: "Systems", icon: Sparkles },
   { href: "/objects", label: "Objects", icon: Orbit },
   { href: "/missions", label: "Missions", icon: Rocket },
 ];
