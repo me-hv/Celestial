@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Search, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -11,16 +12,21 @@ export interface SearchModalTriggerProps {
 }
 
 export function SearchModalTrigger({
-  placeholder = "Search the universe...",
+  placeholder = "Search the universe (e.g. Earth, Mars, Jupiter)...",
   className,
   onSearchSubmit,
 }: SearchModalTriggerProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
-      onSearchSubmit?.(query.trim());
+      if (onSearchSubmit) {
+        onSearchSubmit(query.trim());
+      } else {
+        router.push("/explore");
+      }
     }
   };
 
@@ -43,9 +49,9 @@ export function SearchModalTrigger({
       />
 
       <div className="absolute right-3 flex items-center gap-1.5 pointer-events-none">
-        <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono font-medium text-celestial-subtle bg-celestial-muted/80 rounded border border-celestial-border/40">
+        <kbd className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-mono font-medium text-celestial-subtle bg-celestial-muted/80 rounded border border-celestial-border/40">
           <Sparkles className="w-3 h-3 text-celestial-cyan" />
-          <span>ESC</span>
+          <span>EXPLORE</span>
         </kbd>
       </div>
     </form>

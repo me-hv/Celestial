@@ -1,10 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Orbit } from "lucide-react";
+import { notFound } from "next/navigation";
+import { ArrowLeft, Orbit, Weight, ShieldCheck, ExternalLink, Compass, Layers } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { celestialRepo } from "@/lib/data/celestial-repository";
+import { formatScientificMass, formatTemperature, formatDistance } from "@/lib/utils/formatters";
 
 interface ObjectDetailPageProps {
   params: Promise<{
@@ -14,52 +17,289 @@ interface ObjectDetailPageProps {
 
 export async function generateMetadata({ params }: ObjectDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const capitalized = slug.charAt(0).toUpperCase() + slug.slice(1);
+  const object = celestialRepo.getBySlug(slug);
+
+  if (!object) {
+    return {
+      title: "Object Not Found — CELESTIAL",
+    };
+  }
+
   return {
-    title: `${capitalized} — CELESTIAL Object Atlas`,
-    description: `Scientific parameters, orbital mechanics, and observations for ${slug}.`,
+    title: `${object.canonicalName} (${object.standardDesignation || "Solar System"}) — CELESTIAL Atlas`,
+    description:
+      object.summary ||
+      `Scientific parameters, orbital mechanics, and observations for ${object.canonicalName}.`,
   };
 }
 
 export default async function ObjectDetailPage({ params }: ObjectDetailPageProps) {
   const { slug } = await params;
+  const object = celestialRepo.getBySlug(slug);
+
+  if (!object) {
+    notFound();
+  }
+
+  const isStar = object.classification.code === "STAR";
+  const parentObject = object.parentId ? celestialRepo.getById(object.parentId) : null;
+  const childObjects = celestialRepo.getChildrenOf(object.id);
+
+  const badgeVariant =
+    object.classification.category === "PLANETARY"
+      ? "cyan"
+      : object.classification.category === "STELLAR"
+        ? "amber"
+        : "violet";
 
   return (
     <div className="flex-1 py-10">
-      <Container size="lg" className="space-y-6">
-        <div>
+      <Container size="lg" className="space-y-8">
+        {/* Navigation Breadcrumb */}
+        <div className="flex items-center justify-between">
           <Link href="/objects">
-            <Button variant="ghost" size="sm" className="gap-2 text-celestial-subtle">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2 text-celestial-subtle hover:text-celestial-starlight"
+            >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Atlas</span>
+              <span>Back to Solar Atlas</span>
+            </Button>
+          </Link>
+          <Link href="/explore">
+            <Button variant="cyan" size="sm" className="gap-2">
+              <Compass className="w-4 h-4" />
+              <span>View in 3D Explorer</span>
             </Button>
           </Link>
         </div>
 
-        <div className="flex items-center justify-between border-b border-celestial-muted pb-6">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Orbit className="w-6 h-6 text-celestial-cyan" />
-              <h1 className="text-3xl font-bold font-mono text-celestial-starlight capitalize">
-                {slug.replace(/-/g, " ")}
+        {/* Profile Header Banner */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-8 rounded-2xl border border-celestial-muted/80 bg-celestial-surface/70 backdrop-blur-xl shadow-subtle-card">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <h1 className="text-4xl font-bold font-mono tracking-tight text-celestial-starlight">
+                {object.canonicalName.toUpperCase()}
               </h1>
+              <Badge variant={badgeVariant}>{object.classification.code.replace(/_/g, " ")}</Badge>
             </div>
-            <p className="text-xs font-mono text-celestial-subtle">CANONICAL SLUG: {slug}</p>
+            {object.standardDesignation && (
+              <p className="text-sm font-mono text-celestial-subtle">
+                Standard Designation: {object.standardDesignation}
+              </p>
+            )}
+            <p className="text-sm text-celestial-starlight/90 max-w-2xl leading-relaxed pt-1">
+              {object.summary}
+            </p>
           </div>
-          <Badge variant="cyan">ASTRONOMICAL RECORD</Badge>
         </div>
 
-        <Card elevated>
-          <CardHeader>
-            <CardTitle>Telemetry & Physical Characteristics</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-celestial-subtle">
+        {/* Multi-Catalog Aliases */}
+        {object.aliases.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-mono text-celestial-subtle">Catalog Aliases:</span>
+            {object.aliases.map((alias) => (
+              <span
+                key={alias.name}
+                className="px-2.5 py-1 rounded-md bg-celestial-deep/80 border border-celestial-muted text-celestial-starlight font-mono"
+              >
+                {alias.name}{" "}
+                <span className="text-[10px] text-celestial-subtle">({alias.type})</span>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Two-Column Grid: Physical Characteristics & Orbital Mechanics */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* 1. Physical Characteristics */}
+          <Card elevated className="space-y-4">
+            <CardHeader className="pb-2 border-b border-celestial-muted/50">
+              <CardTitle className="text-lg flex items-center gap-2 text-celestial-cyan">
+                <Weight className="w-4 h-4" />
+                <span>Physical Characteristics</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 font-mono text-xs">
+              <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                <span className="text-celestial-subtle">Total Mass (kg):</span>
+                <span className="font-semibold text-celestial-starlight">
+                  {formatScientificMass(object.physical.massKg)}
+                </span>
+              </div>
+              {object.physical.massEarth && !isStar && (
+                <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                  <span className="text-celestial-subtle">Earth Mass Multiplier:</span>
+                  <span className="font-semibold text-celestial-starlight">
+                    {object.physical.massEarth} M⊕
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                <span className="text-celestial-subtle">Mean Volumetric Radius:</span>
+                <span className="font-semibold text-celestial-starlight">
+                  {object.physical.meanRadiusKm?.toLocaleString()} km
+                </span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                <span className="text-celestial-subtle">Surface Gravity:</span>
+                <span className="font-semibold text-celestial-starlight">
+                  {object.physical.surfaceGravityMs2} m/s²
+                </span>
+              </div>
+              <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                <span className="text-celestial-subtle">Mean Density:</span>
+                <span className="font-semibold text-celestial-starlight">
+                  {object.physical.densityGcm3} g/cm³
+                </span>
+              </div>
+              <div className="flex justify-between py-1.5">
+                <span className="text-celestial-subtle">Mean Temperature:</span>
+                <span className="font-semibold text-celestial-starlight">
+                  {formatTemperature(object.physical.meanTemperatureK)}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 2. Orbital Mechanics */}
+          <Card elevated className="space-y-4">
+            <CardHeader className="pb-2 border-b border-celestial-muted/50">
+              <CardTitle className="text-lg flex items-center gap-2 text-celestial-amber">
+                <Orbit className="w-4 h-4" />
+                <span>Orbital Mechanics (Keplerian Elements)</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 font-mono text-xs">
+              {object.orbital ? (
+                <>
+                  <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                    <span className="text-celestial-subtle">Semi-Major Axis (a):</span>
+                    <span className="font-semibold text-celestial-starlight">
+                      {formatDistance(
+                        object.orbital.semiMajorAxisKm,
+                        undefined,
+                        object.orbital.semiMajorAxisAu
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                    <span className="text-celestial-subtle">Orbital Eccentricity (e):</span>
+                    <span className="font-semibold text-celestial-starlight">
+                      {object.orbital.eccentricity}
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                    <span className="text-celestial-subtle">Orbital Period (Sidereal):</span>
+                    <span className="font-semibold text-celestial-starlight">
+                      {object.orbital.orbitalPeriodDays} days
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1.5 border-b border-celestial-muted/30">
+                    <span className="text-celestial-subtle">Orbital Inclination (i):</span>
+                    <span className="font-semibold text-celestial-starlight">
+                      {object.orbital.inclinationDeg}°
+                    </span>
+                  </div>
+                  <div className="flex justify-between py-1.5">
+                    <span className="text-celestial-subtle">Reference Epoch:</span>
+                    <span className="font-semibold text-celestial-starlight">
+                      J2000.0 (JD 2451545.0)
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="py-8 text-center text-celestial-subtle">
+                  Central gravitational reference body of the Solar System.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Hierarchical Relationships */}
+        {(parentObject || childObjects.length > 0) && (
+          <Card elevated className="space-y-4">
+            <CardHeader className="pb-2 border-b border-celestial-muted/50">
+              <CardTitle className="text-lg flex items-center gap-2 text-celestial-violet">
+                <Layers className="w-4 h-4" />
+                <span>Hierarchical Relationships</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {parentObject && (
+                <div className="space-y-1 text-xs">
+                  <span className="text-celestial-subtle font-mono">Parent Celestial Body:</span>
+                  <div className="pt-1">
+                    <Link href={`/objects/${parentObject.slug}`}>
+                      <Button variant="secondary" size="sm" className="gap-2">
+                        <span>{parentObject.canonicalName}</span>
+                        <span className="text-celestial-subtle text-[11px]">
+                          ({parentObject.classification.code})
+                        </span>
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {childObjects.length > 0 && (
+                <div className="space-y-1.5 text-xs">
+                  <span className="text-celestial-subtle font-mono">
+                    Satellites & Moons ({childObjects.length}):
+                  </span>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {childObjects.map((child) => (
+                      <Link key={child.id} href={`/objects/${child.slug}`}>
+                        <Button variant="secondary" size="sm" className="gap-1.5 font-mono text-xs">
+                          <span>{child.canonicalName}</span>
+                        </Button>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Scientific Provenance Citation */}
+        <div className="p-6 rounded-2xl border border-celestial-cyan/30 bg-celestial-cyan/5 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-celestial-cyan font-mono font-semibold text-sm">
+              <ShieldCheck className="w-5 h-5" />
+              <span>Scientific Data Provenance & Verification</span>
+            </div>
+            <Badge variant="cyan">
+              Confidence: {(object.provenance.confidenceScore * 100).toFixed(1)}%
+            </Badge>
+          </div>
+          <div className="text-xs text-celestial-subtle space-y-1">
             <p>
-              Object detail route established. In Phase 1, this view will render live JPL Horizons
-              ephemeris data, Keplerian orbit visualizers, and atmospheric compositions.
+              Authoritative Source:{" "}
+              <strong className="text-celestial-starlight">{object.provenance.catalogName}</strong>{" "}
+              ({object.provenance.authoritativeBody})
             </p>
-          </CardContent>
-        </Card>
+            <p className="font-mono text-[11px]">
+              Record Identifier: {object.provenance.recordIdentifier} | Ephemeris Model:{" "}
+              {object.provenance.catalogVersion || "DE440"}
+            </p>
+          </div>
+          {object.provenance.citationUrl && (
+            <div className="pt-1">
+              <a
+                href={object.provenance.citationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-celestial-cyan hover:underline font-mono"
+              >
+                <span>View Authoritative Planetary Parameters at NASA JPL SSD</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          )}
+        </div>
       </Container>
     </div>
   );
