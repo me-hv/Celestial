@@ -17,9 +17,9 @@ In CELESTIAL:
 
 The habitable zone is calculated using the **Kopparapu et al. (2013, 2014)** effective stellar flux ($S_{eff}$) model:
 
-$$S_{eff} = S_{eff\odot} + a \cdot T_* + b \cdot T_*^2 + c \cdot T_*^3 + d \cdot T_*^4$$
+$$S_{\text{eff}} = S_{\text{eff},\odot} + a \cdot T_\star + b \cdot T_\star^2 + c \cdot T_\star^3 + d \cdot T_\star^4$$
 
-where $T_* = T_{eff} - 5780\text{ K}$.
+where $T_\star = T_{\text{eff}} - 5780\text{ K}$.
 
 The orbital distance boundaries are determined by:
 

@@ -65,7 +65,7 @@ $$M = E - e\sin(E),\quad E_{n+1} = E_n - \frac{E_n - e\sin(E_n) - M}{1 - e\cos(E
 $$\nu = 2 \arctan\left(\sqrt{\frac{1+e}{1-e}}\tan\frac{E}{2}\right),\quad r = \frac{a(1-e^2)}{1 + e\cos(\nu)}$$
 
 ### 3. Circumstellar Habitable Zone (Kopparapu et al.)
-$$S_{\text{eff}} = S_{\text{eff}\odot} + a T_* + b T_*^2 + c T_*^3 + d T_*^4,\quad d = \sqrt{\frac{L / L_\odot}{S_{\text{eff}}}}$$
+$$S_{\text{eff}} = S_{\text{eff},\odot} + a T_\star + b T_\star^2 + c T_\star^3 + d T_\star^4,\quad d = \sqrt{\frac{L / L_\odot}{S_{\text{eff}}}}\text{ AU}$$
 
 ### 4. $\Lambda\text{CDM}$ FLRW Cosmological Expansion
 $$E(z) = \sqrt{\Omega_{r,0}(1+z)^4 + \Omega_{m,0}(1+z)^3 + \Omega_{k,0}(1+z)^2 + \Omega_{\Lambda,0}}$$
