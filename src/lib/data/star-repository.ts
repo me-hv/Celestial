@@ -219,3 +219,4 @@ export class StarRepository {
 
 // Global Singleton Instance
 export const starRepo = new StarRepository();
+export const starRepository = starRepo;

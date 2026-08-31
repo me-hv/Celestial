@@ -1,6 +1,6 @@
 # CELESTIAL — Astronomical Coordinate & Astrometry Mathematics
 
-This document details the astronomical coordinate transformations, distance derivations from parallax, error propagation, and 3D visualization scaling implemented in **CELESTIAL**.
+This document details the astronomical coordinate transformations, distance derivations, galactic transformations, and 3D visualization scaling implemented in **CELESTIAL**.
 
 ---
 
@@ -39,15 +39,23 @@ Where:
 
 ---
 
-## 3. Transformation to Three.js Scene Coordinates
+## 3. Equatorial (ICRS J2000) to Galactic Coordinates (System II)
 
-In Three.js, $+Y$ is typically the vertical up-axis:
+According to IAU standards (Blaauw et al. 1960 / J2000 definition):
+- North Galactic Pole (NGP): $\alpha_{NGP} = 192.85948^\circ$, $\delta_{NGP} = 27.12825^\circ$.
+- Galactic Center reference angle: $l_{NCP} = 122.93192^\circ$.
 
 $$\begin{aligned}
-x_{3D} &= X \cdot S \\
-y_{3D} &= Z \cdot S \quad (\text{North Celestial Pole mapped to scene vertical}) \\
-z_{3D} &= -Y \cdot S \quad (\text{ICRS } Y \text{ mapped into screen depth})
+\sin b &= \sin\delta \sin\delta_{NGP} + \cos\delta \cos\delta_{NGP} \cos(\alpha - \alpha_{NGP}) \\
+\cos b \sin(l_{NCP} - l) &= \cos\delta \sin(\alpha - \alpha_{NGP}) \\
+\cos b \cos(l_{NCP} - l) &= \sin\delta \cos\delta_{NGP} - \cos\delta \sin\delta_{NGP} \cos(\alpha - \alpha_{NGP})
 \end{aligned}$$
 
-where $S = 4.0\text{ units/pc}$.
+---
+
+## 4. Celestial Angular Separation (Vincenty Formula)
+
+For any two celestial points $(\alpha_1, \delta_1)$ and $(\alpha_2, \delta_2)$:
+
+$$\Delta\theta = \text{atan2}\left( \sqrt{(\cos\delta_2 \sin\Delta\alpha)^2 + (\cos\delta_1 \sin\delta_2 - \sin\delta_1 \cos\delta_2 \cos\Delta\alpha)^2}, \; \sin\delta_1 \sin\delta_2 + \cos\delta_1 \cos\delta_2 \cos\Delta\alpha \right)$$
 $$

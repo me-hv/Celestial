@@ -20,6 +20,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { starRepo } from "@/lib/data/star-repository";
 import { stellarSystemRepo } from "@/lib/data/stellar-system-repository";
 import { formatScientificMass, formatTemperature } from "@/lib/utils/formatters";
+import { LightTravelVsCosmologyBadge } from "@/features/cosmic-time/components/LightTravelVsCosmologyBadge";
 
 interface StarDetailPageProps {
   params: Promise<{
@@ -140,6 +141,23 @@ export default async function StarDetailPage({ params }: StarDetailPageProps) {
             </div>
           </div>
         </div>
+
+        {/* Kinematic Light-Travel Time Badge */}
+        <LightTravelVsCosmologyBadge
+          model={{
+            timeType: "LIGHT_TRAVEL_TIME",
+            distanceMpc: (star.positional.distanceLightYears ?? 0) / 3.26156e6,
+            distanceLy: star.positional.distanceLightYears ?? 0,
+            lookbackYears: star.positional.distanceLightYears ?? 0,
+            lookbackGyr: (star.positional.distanceLightYears ?? 0) / 1e9,
+            isCosmological: false,
+            scientificExplanation: isSun
+              ? "Sun: Reference Origin. Solar photons reach Earth in approximately 8 minutes 20 seconds (1 AU / c)."
+              : `Nearby Stellar Neighborhood: Light from ${star.canonicalName} takes ${(star.positional.distanceLightYears ?? 0).toFixed(2)} years to reach Earth across interstellar space. Spacetime expansion is negligible within the gravitationally bound Milky Way.`,
+          }}
+          objectName={star.canonicalName}
+          showTimelineLink={false}
+        />
 
         {/* Known Planetary System Bridge */}
         <Card elevated className="space-y-4">

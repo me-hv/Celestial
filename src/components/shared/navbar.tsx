@@ -2,16 +2,34 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Compass, Orbit, Rocket, Sparkles, Star } from "lucide-react";
+import {
+  Compass,
+  Orbit,
+  Sparkles,
+  Star,
+  Globe,
+  Disc,
+  Network,
+  Layers,
+  Clock,
+  Telescope,
+  Radio,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Container } from "../ui/container";
 
 const NAV_ITEMS = [
   { href: "/explore", label: "Explore", icon: Compass },
+  { href: "/sky", label: "Sky", icon: Telescope },
   { href: "/stars", label: "Stars", icon: Star },
-  { href: "/systems", label: "Systems", icon: Sparkles },
-  { href: "/objects", label: "Objects", icon: Orbit },
-  { href: "/missions", label: "Missions", icon: Rocket },
+  { href: "/systems", label: "Systems", icon: Orbit },
+  { href: "/milky-way", label: "Milky Way", icon: Globe },
+  { href: "/local-group", label: "Local Group", icon: Network },
+  { href: "/cosmic-web", label: "Cosmic Web", icon: Layers },
+  { href: "/cosmic-time", label: "Cosmic Time", icon: Clock },
+  { href: "/observable-universe", label: "Universe", icon: Radio },
+  { href: "/galaxies", label: "Galaxies", icon: Disc },
+  { href: "/deep-sky", label: "Deep Sky", icon: Sparkles },
 ];
 
 export function Navbar() {
@@ -34,7 +52,7 @@ export function Navbar() {
         </Link>
 
         {/* Navigation Links */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="flex items-center gap-1 sm:gap-1.5">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -43,14 +61,14 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-colors",
                   isActive
                     ? "bg-celestial-surface text-celestial-cyan border border-celestial-cyan/30"
                     : "text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-surface/50"
                 )}
               >
                 <Icon className="w-4 h-4" />
-                <span className="hidden sm:inline">{item.label}</span>
+                <span className="hidden md:inline">{item.label}</span>
               </Link>
             );
           })}

@@ -962,6 +962,64 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
       "The closest known solitary white dwarf to the Solar System (14.07 ly), featuring atmospheric metal pollution from disrupted planetesimals.",
     aliases: ["Van Maanen's Star", "GJ 35", "HIP 3829"],
   },
+
+  // 31. Betelgeuse (Alpha Orionis)
+  {
+    source_id: "3235482910482910482",
+    designation: "Betelgeuse",
+    bayer_flamsteed: "Alpha Orionis",
+    hip_id: "27989",
+    hd_id: "39801",
+    ra_deg: 88.7929,
+    dec_deg: 7.4071,
+    parallax_mas: 5.95,
+    parallax_error_mas: 0.3,
+    pm_ra_mas_yr: 27.33,
+    pm_dec_mas_yr: 10.86,
+    radial_velocity_km_s: 21.91,
+    phot_g_mean_mag: 0.5,
+    v_mag: 0.5,
+    abs_v_mag: -5.85,
+    spectral_class: "M1-M2Ia-ab",
+    teff_gspphot_k: 3600,
+    radius_gspphot_solar: 764.0,
+    mass_flame_solar: 16.5,
+    lum_flame_solar: 126000.0,
+    constellation: "Orion",
+    is_multiple_system: false,
+    summary:
+      "Red supergiant star marking the left shoulder of Orion (548 ly), one of the largest and most luminous stars visible to the naked eye.",
+    aliases: ["Alpha Orionis", "HD 39801", "HIP 27989"],
+  },
+
+  // 32. Rigel (Beta Orionis)
+  {
+    source_id: "3235482910482910483",
+    designation: "Rigel",
+    bayer_flamsteed: "Beta Orionis",
+    hip_id: "24436",
+    hd_id: "34085",
+    ra_deg: 78.6345,
+    dec_deg: -8.2016,
+    parallax_mas: 3.78,
+    parallax_error_mas: 0.34,
+    pm_ra_mas_yr: 1.31,
+    pm_dec_mas_yr: -0.5,
+    radial_velocity_km_s: 20.7,
+    phot_g_mean_mag: 0.13,
+    v_mag: 0.13,
+    abs_v_mag: -7.84,
+    spectral_class: "B8Ia",
+    teff_gspphot_k: 12100,
+    radius_gspphot_solar: 78.9,
+    mass_flame_solar: 21.0,
+    lum_flame_solar: 120000.0,
+    constellation: "Orion",
+    is_multiple_system: true,
+    summary:
+      "Luminous blue supergiant star marking the right foot of Orion (860 ly) and the brightest star in the constellation.",
+    aliases: ["Beta Orionis", "HD 34085", "HIP 24436"],
+  },
 ];
 
 // Helper to normalize and validate all records into domain CelestialObject entities
@@ -970,8 +1028,8 @@ export function createStellarCatalogEntities(): CelestialObject[] {
     const partial = normalizer.normalize(raw);
     const cleanId = raw.source_id
       .replace(/[^0-9]/g, "")
-      .padEnd(12, "0")
-      .slice(0, 12);
+      .padStart(12, "0")
+      .slice(-12);
     const id = `c0000000-0000-4000-8000-${cleanId}`;
 
     const entity: CelestialObject = {

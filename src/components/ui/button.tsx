@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils/cn";
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "cyan";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "cyan" | "default";
   size?: "sm" | "md" | "lg";
 }
 
@@ -14,7 +14,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(
           "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-celestial-cyan focus-visible:ring-offset-2 focus-visible:ring-offset-celestial-void disabled:opacity-50 disabled:pointer-events-none active:scale-[0.98]",
           {
-            "bg-celestial-starlight text-celestial-void hover:bg-white": variant === "primary",
+            "bg-celestial-starlight text-celestial-void hover:bg-white":
+              variant === "primary" || variant === "default",
             "bg-celestial-surface text-celestial-starlight hover:bg-celestial-muted border border-celestial-border":
               variant === "secondary",
             "border border-celestial-border text-celestial-starlight hover:bg-celestial-surface":

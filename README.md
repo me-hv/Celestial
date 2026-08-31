@@ -23,11 +23,19 @@ It enables exploration of celestial entities from our solar neighborhood to deep
 
 ---
 
-## Current Status: Phase 0 (Foundation & Architecture)
+## Current Status: Phase 10 (Live Sky & Astronomical Data Explorer) [COMPLETED]
 
-The repository currently contains the **Phase 0 Foundation**. The architectural boundaries, generalized domain model, database migration schema, ingestion pipeline abstractions, search architecture, design system tokens, and testing harness are established.
-
-**Phase 1 (Solar System Explorer)** will introduce the 3D Keplerian orbital rendering engine, NASA JPL Horizons data integration, and object detail exploration cards.
+CELESTIAL currently features:
+- **Phase 1 — Solar System**: Keplerian orbit engine, NASA JPL ephemeris, 3D interactive Solar System, telemetry cards, and planetary routes.
+- **Phase 2 — Exoplanet & Stellar Systems**: NASA Exoplanet Archive TAP integration, habitable zones, multi-star orbital hierarchy.
+- **Phase 3 — Stellar Neighborhood & Star Catalog**: ESA Gaia DR3 astrometry, ICRS 3D positions, multi-catalog resolution.
+- **Phase 4 — Deep Sky & Galactic Explorer**: Messier/NGC/IC multi-wavelength catalog, IAU Equatorial-Galactic transforms, 2D/3D sky maps.
+- **Phase 5 — Milky Way & Galactic Structure**: Galactocentric coordinates, logarithmic spiral arms, Sagittarius A* SMBH.
+- **Phase 6 — Local Group & Galaxy Explorer**: Morphological galaxy rendering, Megaparsec Cartesian coordinates, galaxy comparison workbench.
+- **Phase 7 — Cosmic Web & Large-Scale Structure**: Supergalactic coordinates, 3D cosmic web filaments and voids, 15-350 Mpc maps.
+- **Phase 8 — Cosmic Time Machine & Universe Timeline**: 4D spacetime exploration, 14 standard cosmological epochs (Planck to Modern), $\Lambda\text{CDM}$ FLRW expansion engine ($z \leftrightarrow a \leftrightarrow t_L$), 3D Past Light Cone, 2D spacetime expansion map, and multi-scale scrubbers.
+- **Phase 9 — Observable Universe & CMB Explorer**: Comoving Particle Horizon (~46.5 Gly), Hubble Sphere (~14 Gly), Cosmological Event Horizon (~17 Gly), 9 Redshift Shells, 12 High-z Observational Landmarks (GN-z11, JADES-GS-z14-0), dedicated 3D CMB Last-Scattering Sphere ($z \approx 1089, T_0 = 2.7255\text{ K}$), 2D spacetime distance graphs ($D_A$ turnover), and Unified Cosmic Scale Hierarchy (Earth $\to$ Observable Universe).
+- **Phase 10 — Live Sky & Astronomical Data Explorer**: Ground observer location model, Local Mean Sidereal Time (LMST), Equatorial $\leftrightarrow$ Horizontal (Alt/Az) transformations, real-time Keplerian planetary ephemerides, analytical lunar position & synodic phase engine, 88 IAU constellation asterisms, interactive 3D inner celestial sphere scene with ground horizon disc, 2D All-Sky Planisphere polar map, live observational telemetry, astronomical twilights (Civil, Nautical, Astronomical), night sky observation session planner, and search-to-sky navigation.
 
 ---
 

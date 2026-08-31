@@ -1,9 +1,10 @@
 import { CelestialCategory, CelestialClassificationCode } from "./classification";
 import { ProvenanceRecord } from "../provenance/types";
 import { ScientificMeasurement } from "../measurement/types";
+import { DeepSkyProperties, MultiWavelengthObservation } from "../deep-sky/types";
 
 /**
- * Standard Catalog Identifiers for Stars and Astronomical Bodies
+ * Standard Catalog Identifiers for Astronomical Bodies across Catalogs
  */
 export interface CatalogIdentifiers {
   gaiaDr3?: string; // e.g. "Gaia DR3 5853498713190525696"
@@ -15,6 +16,12 @@ export interface CatalogIdentifiers {
   sao?: string; // Smithsonian Astrophysical Observatory e.g. "SAO 252838"
   hr?: string; // Harvard Revised / Bright Star Catalog e.g. "HR 5459"
   twoMass?: string; // 2MASS All-Sky Catalog e.g. "2MASS J14294291-6240465"
+  messier?: string; // Messier Catalog e.g. "M31", "M42", "M45"
+  ngc?: string; // New General Catalogue e.g. "NGC 224", "NGC 1976"
+  ic?: string; // Index Catalogue e.g. "IC 434"
+  caldwell?: string; // Caldwell Catalog e.g. "C14"
+  pgc?: string; // Principal Galaxies Catalogue e.g. "PGC 2557"
+  ugc?: string; // Uppsala General Catalogue e.g. "UGC 454"
 }
 
 /**
@@ -58,7 +65,7 @@ export interface PhysicalProperties {
   variabilityType?: string; // e.g. "BY Draconis", "Flare Star", "Delta Scuti"
   isMultipleStarMember?: boolean;
   multipleStarSystemSlug?: string;
-  constellation?: string; // IAU 3-letter or Latin constellation name e.g. "Centaurus"
+  constellation?: string; // IAU 3-letter or Latin constellation name e.g. "Centaurus", "Andromeda", "Orion"
 
   // Morphology & Composition
   morphologicalType?: string;
@@ -84,17 +91,25 @@ export interface PhysicalProperties {
 }
 
 /**
- * Positional Properties in Astrometric / ICRS Coordinates (J2000 / J2016.5)
+ * Positional Properties in Astrometric / ICRS Coordinates (J2000 / J2016.5) & Galactic Coordinates
  */
 export interface PositionalProperties {
   rightAscensionDeg?: number; // alpha [0, 360)
   declinationDeg?: number; // delta [-90, +90]
   distanceLightYears?: number;
   distanceParsecs?: number;
+  distanceKpc?: number; // Kiloparsecs (for Milky Way / globular clusters)
+  distanceMpc?: number; // Megaparsecs (for extragalactic galaxies)
   distanceAu?: number;
   distanceKm?: number;
   epoch?: string; // e.g. "J2000.0", "J2016.5"
   referenceFrame?: "ICRS" | "FK5";
+
+  // Galactic Coordinates (IAU J2000 / System II)
+  galacticCoordinates?: {
+    lDeg: number; // Galactic longitude l [0, 360)
+    bDeg: number; // Galactic latitude b [-90, +90]
+  };
 
   // Astrometric Parameters (Gaia DR3 / Hipparcos)
   parallaxMas?: number; // Trigonometric parallax (varpi) in milliarcseconds
@@ -113,6 +128,7 @@ export interface PositionalProperties {
   distanceUncertainty?: {
     upper?: number;
     lower?: number;
+    percentage?: number;
   };
 }
 
@@ -154,8 +170,12 @@ export interface ObjectAlias {
     | "GAIA"
     | "HIP"
     | "HD"
-    | "GLIESE";
-  sourceCatalog?: string; // e.g. "GAIA_DR3", "SIMBAD", "HIPPARCOS", "NASA_EXOPLANET_ARCHIVE"
+    | "GLIESE"
+    | "MESSIER"
+    | "NGC"
+    | "IC"
+    | "CALDWELL";
+  sourceCatalog?: string; // e.g. "GAIA_DR3", "SIMBAD", "HIPPARCOS", "NASA_EXOPLANET_ARCHIVE", "MESSIER", "OPEN_NGC", "NED"
 }
 
 /**
@@ -171,6 +191,7 @@ export interface DiscoveryInfo {
     | "ASTROMETRY"
     | "MICROLENSING"
     | "TRANSIT_TIMING_VARIATION"
+    | "TELESCOPIC_OBSERVATION"
     | "ANTIQUITY"
     | "OTHER";
   facility?: string;
@@ -193,7 +214,7 @@ export interface MediaAssets {
  */
 export interface CelestialObject {
   id: string; // UUID v4
-  slug: string; // URL-safe slug e.g. "sirius-a", "proxima-centauri", "trappist-1-e"
+  slug: string; // URL-safe slug e.g. "sirius-a", "m31-andromeda-galaxy", "m42-orion-nebula"
   canonicalName: string;
   standardDesignation?: string;
   classification: {
@@ -206,13 +227,17 @@ export interface CelestialObject {
   // Hierarchical Relationships
   parentId?: string; // e.g. Earth's parent is Sun
   hostSystemId?: string; // e.g. "solar-system", "trappist-1-system", "alpha-centauri-system"
-  hostGalaxyId?: string; // e.g. "milky-way"
+  hostGalaxyId?: string; // e.g. "milky-way", "andromeda-galaxy"
   childObjectIds?: string[]; // e.g. planets of a star, or moons of a planet
 
   // Scientific Characteristics
   physical: PhysicalProperties;
   positional: PositionalProperties;
   orbital?: OrbitalProperties;
+
+  // Deep Sky Specific Domain Extensions
+  deepSky?: DeepSkyProperties;
+  observations?: MultiWavelengthObservation[];
 
   // Metadata & Provenance
   discovery?: DiscoveryInfo;

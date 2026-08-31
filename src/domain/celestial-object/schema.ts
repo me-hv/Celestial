@@ -15,6 +15,10 @@ export const ObjectAliasSchema = z.object({
     "HIP",
     "HD",
     "GLIESE",
+    "MESSIER",
+    "NGC",
+    "IC",
+    "CALDWELL",
   ]),
   sourceCatalog: z.string().optional(),
 });
@@ -29,6 +33,12 @@ export const CatalogIdentifiersSchema = z.object({
   sao: z.string().optional(),
   hr: z.string().optional(),
   twoMass: z.string().optional(),
+  messier: z.string().optional(),
+  ngc: z.string().optional(),
+  ic: z.string().optional(),
+  caldwell: z.string().optional(),
+  pgc: z.string().optional(),
+  ugc: z.string().optional(),
 });
 
 export const ScientificMeasurementSchema = z.object({
@@ -111,10 +121,20 @@ export const PositionalPropertiesSchema = z.object({
   declinationDeg: z.number().min(-90).max(90).optional(),
   distanceLightYears: z.number().min(0).optional(),
   distanceParsecs: z.number().min(0).optional(),
+  distanceKpc: z.number().min(0).optional(),
+  distanceMpc: z.number().min(0).optional(),
   distanceAu: z.number().min(0).optional(),
   distanceKm: z.number().min(0).optional(),
   epoch: z.string().optional(),
   referenceFrame: z.enum(["ICRS", "FK5"]).optional(),
+
+  // Galactic Coordinates
+  galacticCoordinates: z
+    .object({
+      lDeg: z.number().min(0).max(360),
+      bDeg: z.number().min(-90).max(90),
+    })
+    .optional(),
 
   // Astrometry
   parallaxMas: z.number().optional(),
@@ -135,6 +155,7 @@ export const PositionalPropertiesSchema = z.object({
     .object({
       upper: z.number().optional(),
       lower: z.number().optional(),
+      percentage: z.number().optional(),
     })
     .optional(),
 });
@@ -178,6 +199,101 @@ export const OrbitalPropertiesSchema = z.object({
     .optional(),
 });
 
+export const MultiWavelengthObservationSchema = z.object({
+  id: z.string(),
+  wavelengthBand: z.enum(["OPTICAL", "INFRARED", "RADIO", "X_RAY", "ULTRAVIOLET", "GAMMA_RAY"]),
+  filterOrFrequency: z.string().optional(),
+  apparentMagnitude: z.number().optional(),
+  fluxDensityJy: z.number().optional(),
+  telescopeOrSurvey: z.string(),
+  instrument: z.string().optional(),
+  epoch: z.string().optional(),
+  observationDate: z.string().optional(),
+  citationOrCredit: z.string().optional(),
+  referenceUrl: z.string().url().optional(),
+});
+
+export const DeepSkyPropertiesSchema = z.object({
+  type: z.enum(["GALAXY", "NEBULA", "PLANETARY_NEBULA", "SUPERNOVA_REMNANT", "STAR_CLUSTER"]),
+  galaxy: z
+    .object({
+      morphologicalType: z.string(),
+      galaxySubtype: z
+        .enum(["SPIRAL", "ELLIPTICAL", "LENTICULAR", "IRREGULAR", "DWARF"])
+        .optional(),
+      redshiftZ: z.number().optional(),
+      radialVelocityKmS: z.number().optional(),
+      majorAxisArcmin: z.number().optional(),
+      minorAxisArcmin: z.number().optional(),
+      positionAngleDeg: z.number().optional(),
+      inclinationDeg: z.number().optional(),
+      estimatedStellarMassSolar: z.number().optional(),
+      starFormationRateSolarMassPerYr: z.number().optional(),
+      galaxyGroupOrCluster: z.string().optional(),
+    })
+    .optional(),
+  nebula: z
+    .object({
+      nebulaSubtype: z.enum(["EMISSION", "REFLECTION", "DARK", "DIFFUSE", "STAR_FORMING"]),
+      angularDiameterArcmin: z.number().optional(),
+      majorAxisArcmin: z.number().optional(),
+      minorAxisArcmin: z.number().optional(),
+      associatedIonizingStar: z.string().optional(),
+      associatedCluster: z.string().optional(),
+      chemicalComposition: z.array(z.string()).optional(),
+    })
+    .optional(),
+  planetaryNebula: z
+    .object({
+      centralStarName: z.string().optional(),
+      centralStarMagnitudeV: z.number().optional(),
+      expansionVelocityKmS: z.number().optional(),
+      angularDiameterArcsec: z.number().optional(),
+      distanceMethod: z.string().optional(),
+    })
+    .optional(),
+  supernovaRemnant: z
+    .object({
+      explosionYearEstimate: z.number().optional(),
+      progenitorType: z.enum(["TYPE_IA", "CORE_COLLAPSE", "UNKNOWN"]).optional(),
+      expansionVelocityKmS: z.number().optional(),
+      remnantCoreType: z.enum(["PULSAR", "NEUTRON_STAR", "BLACK_HOLE", "NONE"]).optional(),
+      centralCompactObject: z.string().optional(),
+    })
+    .optional(),
+  starCluster: z
+    .object({
+      clusterSubtype: z.enum(["OPEN_CLUSTER", "GLOBULAR_CLUSTER", "STELLAR_ASSOCIATION"]),
+      estimatedAgeGyr: z.number().optional(),
+      metallicityFeH: z.number().optional(),
+      estimatedMemberCount: z.number().optional(),
+      coreRadiusArcmin: z.number().optional(),
+      halfLightRadiusArcmin: z.number().optional(),
+      totalLuminositySolar: z.number().optional(),
+      trumplerClass: z.string().optional(),
+    })
+    .optional(),
+  cosmicHierarchy: z
+    .object({
+      supercluster: z.string().optional(),
+      clusterOrGroup: z.string().optional(),
+      hostStructure: z.string().optional(),
+    })
+    .optional(),
+  distanceMethod: z
+    .enum([
+      "TRIGONOMETRIC_PARALLAX",
+      "CEPHEID_VARIABLE",
+      "TIP_OF_RED_GIANT_BRANCH",
+      "TYPE_IA_SUPERNOVA",
+      "SURFACE_BRIGHTNESS_FLUCTUATIONS",
+      "REDSHIFT_HUBBLE_FLOW",
+      "CLUSTER_MAIN_SEQUENCE_FITTING",
+      "LITERATURE_CONSENSUS",
+    ])
+    .optional(),
+});
+
 export const DiscoveryInfoSchema = z.object({
   year: z.number().int().optional(),
   discoveredBy: z.string().optional(),
@@ -189,6 +305,7 @@ export const DiscoveryInfoSchema = z.object({
       "ASTROMETRY",
       "MICROLENSING",
       "TRANSIT_TIMING_VARIATION",
+      "TELESCOPIC_OBSERVATION",
       "ANTIQUITY",
       "OTHER",
     ])
@@ -227,6 +344,9 @@ export const CelestialObjectSchema = z.object({
   physical: PhysicalPropertiesSchema,
   positional: PositionalPropertiesSchema,
   orbital: OrbitalPropertiesSchema.optional(),
+
+  deepSky: DeepSkyPropertiesSchema.optional(),
+  observations: z.array(MultiWavelengthObservationSchema).optional(),
 
   discovery: DiscoveryInfoSchema.optional(),
   provenance: ProvenanceRecordSchema,
