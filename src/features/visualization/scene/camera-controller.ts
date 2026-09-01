@@ -1,27 +1,28 @@
 import * as THREE from "three";
 
-export interface CameraTarget {
-  position: THREE.Vector3;
-  lookAt: THREE.Vector3;
-  distance: number;
+export interface CameraFocusOptions {
+  visualRadius?: number;
+  objectType?: "STAR" | "PLANET" | "MOON" | "GALAXY" | "OTHER";
+  duration?: number;
+  offsetDirection?: THREE.Vector3;
 }
 
 export class CameraController {
   private camera: THREE.PerspectiveCamera;
   private domElement: HTMLElement;
 
-  // Spherical Coordinates for Free Orbit
+  // Spherical Coordinates for Orbiting relative to current target
   private spherical = new THREE.Spherical(120, Math.PI / 3, Math.PI / 4);
-  private targetLookAt = new THREE.Vector3(0, 0, 0);
   private currentLookAt = new THREE.Vector3(0, 0, 0);
+  private targetFocusLookAt = new THREE.Vector3(0, 0, 0);
 
-  // Transition interpolation
+  // Transition interpolation state
   private isTransitioning = false;
   private transitionAlpha = 0;
+  private transitionSpeed = 1.6;
   private startCameraPos = new THREE.Vector3();
   private targetCameraPos = new THREE.Vector3();
   private startLookAt = new THREE.Vector3();
-  private targetFocusLookAt = new THREE.Vector3();
 
   // Pointer Interaction state
   private isDragging = false;
@@ -51,7 +52,13 @@ export class CameraController {
   private onPointerDown = (e: PointerEvent): void => {
     if (e.button !== 0) return; // Left mouse button only
     this.isDragging = true;
-    this.isTransitioning = false; // User manual control interrupts transition
+    // When user takes manual control during transition, finalize lookAt immediately
+    if (this.isTransitioning) {
+      this.isTransitioning = false;
+      this.currentLookAt.copy(this.targetFocusLookAt);
+      const offset = new THREE.Vector3().subVectors(this.camera.position, this.currentLookAt);
+      this.spherical.setFromVector3(offset);
+    }
     this.previousMousePosition = { x: e.clientX, y: e.clientY };
   };
 
@@ -79,34 +86,84 @@ export class CameraController {
     e.preventDefault();
     const zoomSpeed = 0.0015;
     const factor = 1 + e.deltaY * zoomSpeed;
-    this.spherical.radius = Math.max(8, Math.min(600, this.spherical.radius * factor));
-    this.isTransitioning = false;
+
+    if (this.isTransitioning) {
+      this.isTransitioning = false;
+      this.currentLookAt.copy(this.targetFocusLookAt);
+      const offset = new THREE.Vector3().subVectors(this.camera.position, this.currentLookAt);
+      this.spherical.setFromVector3(offset);
+    }
+
+    this.spherical.radius = Math.max(1.5, Math.min(700, this.spherical.radius * factor));
     this.updateCameraPosition();
   };
 
-  public focusOnObject(objectPosition: THREE.Vector3, visualRadius: number, _duration = 1.2): void {
+  /**
+   * Calculates optimal viewing distance calibrated to body size and type
+   */
+  public calculateFocusDistance(
+    visualRadius: number,
+    objectType?: "STAR" | "PLANET" | "MOON" | "GALAXY" | "OTHER"
+  ): number {
+    switch (objectType) {
+      case "MOON":
+        return Math.max(visualRadius * 4.0, 2.5);
+      case "STAR":
+        return Math.max(visualRadius * 4.5, 25.0);
+      case "GALAXY":
+        return Math.max(visualRadius * 3.5, 40.0);
+      case "PLANET":
+      default:
+        if (visualRadius > 2.0) {
+          // Gas giant (Jupiter/Saturn)
+          return Math.max(visualRadius * 3.8, 12.0);
+        }
+        // Terrestrial planet (Earth/Mars/Venus/Mercury)
+        return Math.max(visualRadius * 4.5, 4.5);
+    }
+  }
+
+  /**
+   * Smoothly focuses the camera and orbit center onto a target object position
+   */
+  public focusOnObject(
+    objectPosition: THREE.Vector3,
+    visualRadius = 1.0,
+    options: CameraFocusOptions = {}
+  ): void {
+    const focusDistance = this.calculateFocusDistance(visualRadius, options.objectType || "PLANET");
+
     this.isTransitioning = true;
     this.transitionAlpha = 0;
+    this.transitionSpeed = options.duration ? 1.0 / options.duration : 1.6;
 
     this.startCameraPos.copy(this.camera.position);
     this.startLookAt.copy(this.currentLookAt);
 
     this.targetFocusLookAt.copy(objectPosition);
 
-    // Compute ideal camera offset based on body radius
-    const distanceOffset = Math.max(visualRadius * 4.5, 6.0);
-    const offsetDir = new THREE.Vector3(1, 0.6, 1).normalize().multiplyScalar(distanceOffset);
-    this.targetCameraPos.copy(objectPosition).add(offsetDir);
+    // Compute camera target position maintaining an elevated perspective
+    const dir = options.offsetDirection || new THREE.Vector3(1, 0.55, 1).normalize();
+    const offsetVector = dir.clone().multiplyScalar(focusDistance);
+    this.targetCameraPos.copy(objectPosition).add(offsetVector);
+
+    // Prepare spherical coordinates for subsequent orbit & zoom around target
+    this.spherical.setFromVector3(offsetVector);
   }
 
-  public resetView(): void {
+  /**
+   * Smoothly resets the camera back to system origin overview
+   */
+  public resetView(overviewDistance = 120): void {
     this.isTransitioning = true;
     this.transitionAlpha = 0;
+    this.transitionSpeed = 1.5;
+
     this.startCameraPos.copy(this.camera.position);
     this.startLookAt.copy(this.currentLookAt);
 
     this.targetFocusLookAt.set(0, 0, 0);
-    this.spherical.set(130, Math.PI / 3, Math.PI / 4);
+    this.spherical.set(overviewDistance, Math.PI / 3, Math.PI / 4);
 
     const targetPos = new THREE.Vector3().setFromSpherical(this.spherical);
     this.targetCameraPos.copy(targetPos);
@@ -115,7 +172,7 @@ export class CameraController {
   public update(deltaTime: number): void {
     if (this.isTransitioning) {
       // Smooth cubic ease out
-      this.transitionAlpha += deltaTime * 1.5;
+      this.transitionAlpha += deltaTime * this.transitionSpeed;
       const t = Math.min(1.0, this.transitionAlpha);
       const easeT = 1 - Math.pow(1 - t, 3);
 
@@ -125,12 +182,15 @@ export class CameraController {
 
       if (t >= 1.0) {
         this.isTransitioning = false;
-        // Sync spherical coordinates to final transition state
+        this.currentLookAt.copy(this.targetFocusLookAt);
         const offset = new THREE.Vector3().subVectors(this.camera.position, this.currentLookAt);
         this.spherical.setFromVector3(offset);
-        this.targetLookAt.copy(this.currentLookAt);
       }
     }
+  }
+
+  public getTargetPosition(): THREE.Vector3 {
+    return this.currentLookAt.clone();
   }
 
   private updateCameraPosition(): void {

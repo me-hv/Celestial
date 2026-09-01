@@ -24,14 +24,14 @@ export const CELESTIAL_BODY_PALETTE: Record<
   "trappist-1-b": { color: "#9CA3AF", roughness: 0.85 },
   "trappist-1-c": { color: "#D1D5DB", roughness: 0.8 },
   "trappist-1-d": { color: "#F87171", roughness: 0.75 },
-  "trappist-1-e": { color: "#38BDF8", roughness: 0.5 }, // Habitable Zone
-  "trappist-1-f": { color: "#60A5FA", roughness: 0.55 }, // Habitable Zone
-  "trappist-1-g": { color: "#818CF8", roughness: 0.6 }, // Habitable Zone
-  "trappist-1-h": { color: "#BAE6FD", roughness: 0.9 }, // Icy
+  "trappist-1-e": { color: "#38BDF8", roughness: 0.5 },
+  "trappist-1-f": { color: "#60A5FA", roughness: 0.55 },
+  "trappist-1-g": { color: "#818CF8", roughness: 0.6 },
+  "trappist-1-h": { color: "#BAE6FD", roughness: 0.9 },
 
   // Proxima Centauri System
   "proxima-centauri-star": { color: "#F87171", emissive: "#EF4444", roughness: 0.2 },
-  "proxima-centauri-b": { color: "#34D399", roughness: 0.6 }, // Habitable Zone
+  "proxima-centauri-b": { color: "#34D399", roughness: 0.6 },
   "proxima-centauri-d": { color: "#9CA3AF", roughness: 0.8 },
 
   // Alpha Centauri
@@ -40,10 +40,10 @@ export const CELESTIAL_BODY_PALETTE: Record<
 
   // 55 Cancri (Copernicus)
   "55-cancri-star": { color: "#FDE047", emissive: "#EAB308", roughness: 0.2 },
-  "55-cancri-e": { color: "#F43F5E", roughness: 0.3 }, // Lava Super-Earth
+  "55-cancri-e": { color: "#F43F5E", roughness: 0.3 },
   "55-cancri-b": { color: "#F59E0B", roughness: 0.6 },
   "55-cancri-c": { color: "#EAB308", roughness: 0.65 },
-  "55-cancri-f": { color: "#22D3EE", roughness: 0.5 }, // HZ Gas Giant
+  "55-cancri-f": { color: "#22D3EE", roughness: 0.5 },
   "55-cancri-d": { color: "#38BDF8", roughness: 0.6 },
 
   // WASP-12 (Extreme Hot Jupiter)
@@ -59,12 +59,13 @@ export interface BodyMeshNode {
   object: CelestialObject;
   group: THREE.Group;
   mesh: THREE.Mesh;
+  hitMesh?: THREE.Mesh;
   selectionRing?: THREE.Mesh;
   visualRadius: number;
 }
 
 /**
- * Creates a data-driven 3D mesh node for any CelestialObject (Star, Planet, Exoplanet, Moon)
+ * Creates a data-driven 3D mesh node with raycast hit boundaries for any CelestialObject
  */
 export function createCelestialBodyNode(
   object: CelestialObject,
@@ -88,20 +89,14 @@ export function createCelestialBodyNode(
   let palette = CELESTIAL_BODY_PALETTE[object.slug];
   if (!palette) {
     if (isStar) {
-      // Default stellar color based on spectral class or temperature
       const temp =
         object.physical.effectiveTemperatureK || object.physical.meanTemperatureK || 5778;
-      if (temp < 3700)
-        palette = { color: "#EF4444", emissive: "#DC2626", roughness: 0.2 }; // M-dwarf
-      else if (temp < 5200)
-        palette = { color: "#EA580C", emissive: "#C2410C", roughness: 0.2 }; // K-dwarf
-      else if (temp < 6000)
-        palette = { color: "#FBBF24", emissive: "#F59E0B", roughness: 0.2 }; // G-dwarf (Sun)
-      else if (temp < 7500)
-        palette = { color: "#FEF08A", emissive: "#FACC15", roughness: 0.2 }; // F-type
-      else palette = { color: "#93C5FD", emissive: "#60A5FA", roughness: 0.2 }; // A/B type
+      if (temp < 3700) palette = { color: "#EF4444", emissive: "#DC2626", roughness: 0.2 };
+      else if (temp < 5200) palette = { color: "#EA580C", emissive: "#C2410C", roughness: 0.2 };
+      else if (temp < 6000) palette = { color: "#FBBF24", emissive: "#F59E0B", roughness: 0.2 };
+      else if (temp < 7500) palette = { color: "#FEF08A", emissive: "#FACC15", roughness: 0.2 };
+      else palette = { color: "#93C5FD", emissive: "#60A5FA", roughness: 0.2 };
     } else {
-      // Exoplanet fallback color
       switch (object.classification.code) {
         case "SUPER_EARTH":
           palette = { color: "#818CF8", roughness: 0.5 };
@@ -151,6 +146,20 @@ export function createCelestialBodyNode(
   mesh.userData = { objectId: object.id, slug: object.slug, celestialObject: object };
   group.add(mesh);
 
+  // Invisible Hit Target Mesh (Ensures easy raycast selection even when zoomed out or for small bodies like Moon)
+  const hitRadius = isMoon
+    ? Math.max(visualRadius * 1.3, 0.75)
+    : Math.max(visualRadius * 1.25, 1.1);
+  const hitGeo = new THREE.SphereGeometry(hitRadius, 16, 16);
+  const hitMat = new THREE.MeshBasicMaterial({
+    visible: false,
+    wireframe: false,
+  });
+  const hitMesh = new THREE.Mesh(hitGeo, hitMat);
+  hitMesh.name = `hit-${object.slug}`;
+  hitMesh.userData = { objectId: object.id, slug: object.slug, celestialObject: object };
+  group.add(hitMesh);
+
   // Saturn's Ring System
   if (object.slug === "saturn") {
     const innerRingRadius = visualRadius * 1.4;
@@ -186,7 +195,7 @@ export function createCelestialBodyNode(
     group.add(atmo);
   }
 
-  // Selection Indicator Ring (Initially Hidden)
+  // Selection Indicator Ring (Reticle)
   const selRingGeo = new THREE.RingGeometry(visualRadius * 1.35, visualRadius * 1.48, 48);
   selRingGeo.rotateX(Math.PI / 2);
   const selRingMat = new THREE.MeshBasicMaterial({
@@ -203,6 +212,7 @@ export function createCelestialBodyNode(
     object,
     group,
     mesh,
+    hitMesh,
     selectionRing,
     visualRadius,
   };
@@ -211,5 +221,5 @@ export function createCelestialBodyNode(
 export function updateSelectionRingState(node: BodyMeshNode, isSelected: boolean): void {
   if (!node.selectionRing) return;
   const mat = node.selectionRing.material as THREE.MeshBasicMaterial;
-  mat.opacity = isSelected ? 0.9 : 0.0;
+  mat.opacity = isSelected ? 0.95 : 0.0;
 }

@@ -37,11 +37,19 @@ export function SolarSystemScene({
   const orbitLinesRef = useRef<THREE.LineLoop[]>([]);
   const [isSceneReady, setIsSceneReady] = useState(false);
 
-  // Focus on selected body when focusedObjectId changes
+  // Focus on selected body
   const handleFocus = useCallback((objectId: string) => {
     const node = nodesMapRef.current.get(objectId);
     if (node && cameraControllerRef.current) {
-      cameraControllerRef.current.focusOnObject(node.group.position, node.visualRadius);
+      const type =
+        node.object.classification.code === "MOON"
+          ? "MOON"
+          : node.object.classification.code === "STAR"
+            ? "STAR"
+            : "PLANET";
+      cameraControllerRef.current.focusOnObject(node.group.position, node.visualRadius, {
+        objectType: type,
+      });
     }
   }, []);
 
@@ -80,7 +88,11 @@ export function SolarSystemScene({
     const cameraController = new CameraController(camera, container);
     cameraControllerRef.current = cameraController;
 
-    // 2. Renderer (with graceful fallback if WebGL is unavailable)
+    // Initial camera position overview
+    camera.position.set(0, 65, 95);
+    camera.lookAt(0, 0, 0);
+
+    // 2. Renderer with fallback
     let renderer: THREE.WebGLRenderer | null = null;
     try {
       renderer = new THREE.WebGLRenderer({
@@ -93,7 +105,6 @@ export function SolarSystemScene({
       renderer.toneMappingExposure = 1.2;
       container.appendChild(renderer.domElement);
     } catch {
-      // Headless / non-WebGL environment fallback
       setIsSceneReady(true);
       return () => {
         cameraController.dispose();
@@ -101,7 +112,7 @@ export function SolarSystemScene({
     }
 
     // 3. Lighting
-    const ambientLight = new THREE.AmbientLight("#475569", 0.35);
+    const ambientLight = new THREE.AmbientLight("#475569", 0.4);
     scene.add(ambientLight);
 
     const sunLight = new THREE.PointLight("#FFFFFF", 2.2, 1000, 0.2);
@@ -125,7 +136,11 @@ export function SolarSystemScene({
       const node = createCelestialBodyNode(obj);
       nodes.set(obj.id, node);
       scene.add(node.group);
+
       clickableMeshes.push(node.mesh);
+      if (node.hitMesh) {
+        clickableMeshes.push(node.hitMesh);
+      }
 
       if (obj.slug === "earth") earthNode = node;
       if (obj.slug === "moon") moonNode = node;
@@ -169,7 +184,7 @@ export function SolarSystemScene({
     nodesMapRef.current = nodes;
     orbitLinesRef.current = orbits;
 
-    // 6. Raycasting for object selection
+    // 6. Raycasting for Object Selection & Smooth Camera Focus
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let isClickAction = false;
@@ -184,7 +199,7 @@ export function SolarSystemScene({
       const dx = Math.abs(e.clientX - pointerStart.x);
       const dy = Math.abs(e.clientY - pointerStart.y);
       if (dx > 4 || dy > 4) {
-        isClickAction = false; // It's a camera drag, not a selection click
+        isClickAction = false;
       }
     };
 
@@ -201,8 +216,22 @@ export function SolarSystemScene({
       if (intersects.length > 0) {
         const hit = intersects[0].object;
         const objectData = hit.userData.celestialObject as CelestialObject;
-        if (objectData && onObjectSelect) {
-          onObjectSelect(objectData);
+        if (objectData) {
+          const targetNode = nodes.get(objectData.id);
+          if (targetNode) {
+            const type =
+              objectData.classification.code === "MOON"
+                ? "MOON"
+                : objectData.classification.code === "STAR"
+                  ? "STAR"
+                  : "PLANET";
+            cameraController.focusOnObject(targetNode.group.position, targetNode.visualRadius, {
+              objectType: type,
+            });
+          }
+          if (onObjectSelect) {
+            onObjectSelect(objectData);
+          }
         }
       }
     };
@@ -231,7 +260,7 @@ export function SolarSystemScene({
       const deltaTime = (currentTime - lastTime) / 1000;
       lastTime = currentTime;
 
-      // Smooth rotate planets
+      // Axial planet rotation
       nodes.forEach((node) => {
         node.mesh.rotation.y += 0.3 * deltaTime;
       });
@@ -259,7 +288,7 @@ export function SolarSystemScene({
     animationFrameId = requestAnimationFrame(animate);
     setIsSceneReady(true);
 
-    // 9. Cleanup & Disposal
+    // 9. Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
@@ -269,7 +298,6 @@ export function SolarSystemScene({
 
       cameraController.dispose();
 
-      // Dispose Three.js scene graph
       scene.traverse((child) => {
         if (child instanceof THREE.Mesh || child instanceof THREE.Line) {
           child.geometry?.dispose();
@@ -301,7 +329,9 @@ export function SolarSystemScene({
         <div className="absolute inset-0 flex items-center justify-center bg-celestial-void/90 z-20">
           <div className="text-center space-y-2">
             <div className="w-8 h-8 border-2 border-celestial-cyan border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs font-mono text-celestial-subtle">INITIALIZING 3D ENGINE...</p>
+            <p className="text-xs font-mono text-celestial-subtle">
+              INITIALIZING 3D PLANETARY ENGINE...
+            </p>
           </div>
         </div>
       )}

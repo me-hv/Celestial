@@ -10,12 +10,11 @@ describe("Application UI Smoke Tests", () => {
   it("renders the Home Page with core CELESTIAL brand and exploration triggers", () => {
     render(<HomePage />);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("CELESTIAL");
-    expect(screen.getByText("Explore the universe.")).toBeDefined();
-    expect(screen.getByPlaceholderText(/Search the universe/i)).toBeDefined();
-    expect(screen.getByText("Explore")).toBeDefined();
-    expect(screen.getByText("Sky")).toBeDefined();
-    expect(screen.getByText("Objects")).toBeDefined();
-    expect(screen.getByText("Missions")).toBeDefined();
+    expect(screen.getByText("Interactive Atlas of the Universe")).toBeDefined();
+    expect(screen.getByText("JOURNEY THROUGH THE UNIVERSE")).toBeDefined();
+    expect(screen.getByText("EXPLORE THE COSMIC REALMS")).toBeDefined();
+    expect(screen.getByText("Solar System Explorer")).toBeDefined();
+    expect(screen.getByText("Live Sky & Observatory")).toBeDefined();
   });
 
   it("renders UI primitives with correct styling tokens", () => {

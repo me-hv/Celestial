@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/shared/navbar";
-import { Footer } from "@/components/shared/footer";
+import { AppShell } from "@/components/layout/AppShell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,6 +28,8 @@ export const metadata: Metadata = {
     "exoplanets",
     "stars",
     "galaxies",
+    "cosmic web",
+    "observable universe",
   ],
 };
 
@@ -39,10 +40,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen flex flex-col bg-celestial-void font-sans text-celestial-starlight antialiased selection:bg-celestial-cyan/20 selection:text-celestial-cyan">
-        <Navbar />
-        <main className="flex-1 flex flex-col">{children}</main>
-        <Footer />
+      <body className="min-h-screen bg-celestial-void font-sans text-celestial-starlight antialiased selection:bg-celestial-cyan/20 selection:text-celestial-cyan overflow-hidden">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

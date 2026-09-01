@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { StellarSystemScene } from "@/features/visualization/scene/StellarSystemScene";
 import { TelemetryPanel } from "@/features/exploration/components/TelemetryPanel";
@@ -15,6 +15,7 @@ import { StellarSystem } from "@/domain/stellar-system/types";
 function ExploreContent() {
   const searchParams = useSearchParams();
   const initialSystemSlug = searchParams.get("system") || "solar-system";
+  const targetSlug = searchParams.get("target");
 
   const [currentSystem, setCurrentSystem] = useState<StellarSystem>(() => {
     return stellarSystemRepo.getBySlug(initialSystemSlug) || stellarSystemRepo.getAll()[0];
@@ -25,11 +26,20 @@ function ExploreContent() {
   });
 
   const [selectedObject, setSelectedObject] = useState<CelestialObject | null>(() => {
+    if (targetSlug) {
+      const match = stellarSystemRepo
+        .getAllObjectsForSystem(currentSystem.id)
+        .find((o) => o.slug === targetSlug);
+      if (match) return match;
+    }
     const planets = stellarSystemRepo.getPlanets(currentSystem.id);
     return planets[0] || systemObjects[0] || null;
   });
 
-  const [focusedObjectId, setFocusedObjectId] = useState<string | undefined>(undefined);
+  const [focusedObjectId, setFocusedObjectId] = useState<string | undefined>(() => {
+    return selectedObject?.id;
+  });
+
   const [showOrbits, setShowOrbits] = useState(true);
   const [showHabitableZone, setShowHabitableZone] = useState(false);
   const [isScaleModalOpen, setIsScaleModalOpen] = useState(false);
@@ -37,40 +47,61 @@ function ExploreContent() {
   // Sync URL search params change
   useEffect(() => {
     const systemParam = searchParams.get("system");
+    const targetParam = searchParams.get("target");
+
     if (systemParam && systemParam !== currentSystem.slug) {
       const targetSystem = stellarSystemRepo.getBySlug(systemParam);
       if (targetSystem) {
-        handleSystemChange(targetSystem);
+        handleSystemChange(targetSystem, targetParam);
+      }
+    } else if (targetParam && targetParam !== selectedObject?.slug) {
+      const targetObj = systemObjects.find((o) => o.slug === targetParam);
+      if (targetObj) {
+        setSelectedObject(targetObj);
+        setFocusedObjectId(targetObj.id);
       }
     }
   }, [searchParams]);
 
-  const handleSystemChange = (system: StellarSystem) => {
+  const handleSystemChange = useCallback((system: StellarSystem, targetObjSlug?: string | null) => {
     setCurrentSystem(system);
     const objects = stellarSystemRepo.getAllObjectsForSystem(system.id);
     setSystemObjects(objects);
-    const planets = stellarSystemRepo.getPlanets(system.id);
-    const firstBody = planets[0] || objects[0] || null;
-    setSelectedObject(firstBody);
-    setFocusedObjectId(undefined);
-  };
 
-  const handleSelectObject = (object: CelestialObject) => {
-    // If selected object belongs to another system, switch system
-    if (
-      object.hostSystemId &&
-      object.hostSystemId !== currentSystem.id &&
-      object.hostSystemId !== currentSystem.slug
-    ) {
-      const parentSys =
-        stellarSystemRepo.getById(object.hostSystemId) ||
-        stellarSystemRepo.getBySlug(object.hostSystemId);
-      if (parentSys) {
-        handleSystemChange(parentSys);
-      }
+    let targetBody: CelestialObject | null = null;
+    if (targetObjSlug) {
+      targetBody = objects.find((o) => o.slug === targetObjSlug) || null;
     }
-    setSelectedObject(object);
-  };
+    if (!targetBody) {
+      const planets = stellarSystemRepo.getPlanets(system.id);
+      targetBody = planets[0] || objects[0] || null;
+    }
+
+    setSelectedObject(targetBody);
+    setFocusedObjectId(targetBody?.id);
+  }, []);
+
+  const handleSelectObject = useCallback(
+    (object: CelestialObject) => {
+      // If selected object belongs to another system, switch system
+      if (
+        object.hostSystemId &&
+        object.hostSystemId !== currentSystem.id &&
+        object.hostSystemId !== currentSystem.slug
+      ) {
+        const parentSys =
+          stellarSystemRepo.getById(object.hostSystemId) ||
+          stellarSystemRepo.getBySlug(object.hostSystemId);
+        if (parentSys) {
+          handleSystemChange(parentSys, object.slug);
+          return;
+        }
+      }
+      setSelectedObject(object);
+      setFocusedObjectId(object.id);
+    },
+    [currentSystem.id, currentSystem.slug, handleSystemChange]
+  );
 
   const handleFocusCamera = (object: CelestialObject) => {
     setFocusedObjectId(object.id);
@@ -82,14 +113,13 @@ function ExploreContent() {
   };
 
   return (
-    <div className="relative flex-1 flex flex-col h-[calc(100vh-4rem)] overflow-hidden bg-celestial-void">
+    <div className="relative flex-1 flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden bg-celestial-void">
       {/* Top Floating Explorer Controls: Search + System Selector */}
       <div className="absolute top-4 left-4 right-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 pointer-events-none">
         <div className="pointer-events-auto w-full sm:w-auto">
           <ExplorerSearchBar
             onSelectObject={(obj) => {
               handleSelectObject(obj);
-              handleFocusCamera(obj);
             }}
           />
         </div>
@@ -110,7 +140,6 @@ function ExploreContent() {
             selectedObjectId={selectedObject?.id}
             onSelectObject={(obj) => {
               handleSelectObject(obj);
-              handleFocusCamera(obj);
             }}
             showOrbits={showOrbits}
             onToggleOrbits={() => setShowOrbits(!showOrbits)}

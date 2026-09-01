@@ -163,6 +163,9 @@ export function StellarSystemScene({
       nodes.set(star.id, starNode);
       scene.add(starNode.group);
       clickableMeshes.push(starNode.mesh);
+      if (starNode.hitMesh) {
+        clickableMeshes.push(starNode.hitMesh);
+      }
 
       if (
         currentSystem.architecture === "BINARY_STAR" ||
@@ -182,6 +185,9 @@ export function StellarSystemScene({
       nodes.set(planet.id, planetNode);
       scene.add(planetNode.group);
       clickableMeshes.push(planetNode.mesh);
+      if (planetNode.hitMesh) {
+        clickableMeshes.push(planetNode.hitMesh);
+      }
 
       const semiMajorAxisAu = planet.orbital?.semiMajorAxisAu;
       if (semiMajorAxisAu && semiMajorAxisAu > 0) {
@@ -233,7 +239,7 @@ export function StellarSystemScene({
     nodesMapRef.current = nodes;
     orbitLinesRef.current = orbits;
 
-    // 8. Raycasting Click Selection
+    // 8. Raycasting Click Selection & Focus
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
     let isClickAction = false;
@@ -265,8 +271,22 @@ export function StellarSystemScene({
       if (intersects.length > 0) {
         const hit = intersects[0].object;
         const objectData = hit.userData.celestialObject as CelestialObject;
-        if (objectData && onObjectSelect) {
-          onObjectSelect(objectData);
+        if (objectData) {
+          const targetNode = nodes.get(objectData.id);
+          if (targetNode) {
+            const type =
+              objectData.classification.code === "MOON"
+                ? "MOON"
+                : objectData.classification.code === "STAR"
+                  ? "STAR"
+                  : "PLANET";
+            cameraController.focusOnObject(targetNode.group.position, targetNode.visualRadius, {
+              objectType: type,
+            });
+          }
+          if (onObjectSelect) {
+            onObjectSelect(objectData);
+          }
         }
       }
     };
