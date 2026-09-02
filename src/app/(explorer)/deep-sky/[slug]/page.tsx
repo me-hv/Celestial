@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Layers,
   Radio,
+  Telescope,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,17 @@ export default async function DeepSkyDetailPage({ params }: DeepSkyDetailPagePro
             </Button>
           </Link>
           <div className="flex items-center gap-2">
+            <Link href={`/sky?target=${obj.slug}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 font-mono text-xs border-celestial-cyan/40 text-celestial-starlight hover:text-celestial-cyan"
+                title="Observe this deep-sky object in live sky"
+              >
+                <Telescope className="w-3.5 h-3.5 text-celestial-cyan" />
+                <span>Observe in Sky</span>
+              </Button>
+            </Link>
             <Link href="/deep-sky">
               <Button variant="cyan" size="sm" className="gap-2 font-mono text-xs">
                 <Globe className="w-4 h-4" />

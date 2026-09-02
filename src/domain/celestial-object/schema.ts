@@ -99,6 +99,18 @@ export const PhysicalPropertiesSchema = z.object({
     )
     .optional(),
 
+  // Planetary Ring System
+  hasRingSystem: z.boolean().optional(),
+  ringSystem: z
+    .object({
+      innerRadiusKm: z.number().positive().optional(),
+      outerRadiusKm: z.number().positive().optional(),
+      opacity: z.number().min(0).max(1).optional(),
+      color: z.string().optional(),
+      inclinationDeg: z.number().optional(),
+    })
+    .optional(),
+
   measurementsWithUncertainty: z
     .object({
       massEarth: ScientificMeasurementSchema.optional(),

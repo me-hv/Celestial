@@ -64,4 +64,19 @@ describe("Sky Object Repository & Dynamic Alt/Az Resolver", () => {
     const searchOrion = skyObjectRepo.searchSky("Orion", testLocation);
     expect(searchOrion.length).toBeGreaterThan(0);
   });
+
+  it("ensures all visible sky objects have unique objectIds across all preset locations", () => {
+    PRESET_OBSERVER_LOCATIONS.forEach((loc) => {
+      const visible = skyObjectRepo.getVisibleSkyObjects(loc, new Date());
+      const seenIds = new Set<string>();
+      visible.forEach((obs) => {
+        if (seenIds.has(obs.objectId)) {
+          throw new Error(
+            `Duplicate objectId ${obs.objectId} found for visible object ${obs.canonicalName} at ${loc.name}`
+          );
+        }
+        seenIds.add(obs.objectId);
+      });
+    });
+  });
 });

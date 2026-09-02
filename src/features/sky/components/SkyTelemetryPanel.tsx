@@ -3,16 +3,25 @@
 import React from "react";
 import Link from "next/link";
 import { SkyObjectObservation } from "@/domain/observer/types";
-import { Compass, Clock, ExternalLink, ShieldCheck, Globe } from "lucide-react";
+import { Compass, Clock, ExternalLink, ShieldCheck, Globe, Crosshair } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export interface SkyTelemetryPanelProps {
   observation: SkyObjectObservation | null;
+  isTracked?: boolean;
+  onToggleTrack?: () => void;
+  onFocusCamera?: () => void;
   className?: string;
 }
 
-export function SkyTelemetryPanel({ observation, className = "" }: SkyTelemetryPanelProps) {
+export function SkyTelemetryPanel({
+  observation,
+  isTracked = false,
+  onToggleTrack,
+  onFocusCamera,
+  className = "",
+}: SkyTelemetryPanelProps) {
   if (!observation) {
     return (
       <div
@@ -69,7 +78,7 @@ export function SkyTelemetryPanel({ observation, className = "" }: SkyTelemetryP
       {/* Header */}
       <div className="flex items-start justify-between gap-3 border-b border-celestial-muted/70 pb-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-lg font-bold text-celestial-starlight">{canonicalName}</h3>
             <Badge
               variant="outline"
@@ -86,9 +95,50 @@ export function SkyTelemetryPanel({ observation, className = "" }: SkyTelemetryP
             <div className="text-xs text-celestial-subtle font-mono">{standardDesignation}</div>
           )}
         </div>
-        <Badge variant="cyan" className="text-[10px] uppercase tracking-wider">
-          {type}
-        </Badge>
+        <div className="flex flex-col items-end gap-1">
+          <Badge variant="cyan" className="text-[10px] uppercase tracking-wider">
+            {type}
+          </Badge>
+          {horizontal.isAboveHorizon && (
+            <Badge
+              variant={horizontal.apparentAltitudeDeg >= 30 ? "cyan" : "amber"}
+              className="text-[9px] uppercase tracking-wider"
+            >
+              {horizontal.apparentAltitudeDeg >= 45
+                ? "EXCELLENT"
+                : horizontal.apparentAltitudeDeg >= 30
+                  ? "GOOD"
+                  : "FAIR"}
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Target Tracking & Quick Focus Action */}
+      <div className="flex items-center gap-2">
+        {onToggleTrack && (
+          <Button
+            onClick={onToggleTrack}
+            variant={isTracked ? "cyan" : "outline"}
+            size="sm"
+            className="flex-1 gap-1.5 font-mono text-xs"
+          >
+            <Crosshair className={`w-3.5 h-3.5 ${isTracked ? "animate-spin" : ""}`} />
+            {isTracked ? "Tracking Active" : "Track Object"}
+          </Button>
+        )}
+        {onFocusCamera && (
+          <Button
+            onClick={onFocusCamera}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 font-mono text-xs border-celestial-muted/70 text-celestial-starlight"
+            title="Focus camera onto this object"
+          >
+            <Compass className="w-3.5 h-3.5 text-celestial-cyan" />
+            Center
+          </Button>
+        )}
       </div>
 
       {/* 1. Live Horizontal Sky Coordinates */}
@@ -224,7 +274,7 @@ export function SkyTelemetryPanel({ observation, className = "" }: SkyTelemetryP
         </div>
       </div>
 
-      {/* 5. Provenance & Action Link */}
+      {/* 5. Epistemic Status & Provenance */}
       <div className="space-y-3 pt-1 border-t border-celestial-muted/60">
         <div className="flex items-center justify-between text-[10px] text-celestial-subtle">
           <span className="flex items-center gap-1">
@@ -234,16 +284,42 @@ export function SkyTelemetryPanel({ observation, className = "" }: SkyTelemetryP
           <span>Score: {provenance.confidenceScore * 100}%</span>
         </div>
 
-        <Link href={profileUrl} className="block">
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full gap-2 font-mono text-xs text-celestial-starlight border-celestial-cyan/40 hover:bg-celestial-cyan/10 hover:text-celestial-cyan"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Open Full Astronomical Profile
-          </Button>
-        </Link>
+        {/* Cross-Scale Navigation Actions */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <Link href={profileUrl} className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-1.5 font-mono text-xs text-celestial-starlight border-celestial-cyan/40 hover:bg-celestial-cyan/10 hover:text-celestial-cyan"
+            >
+              <ExternalLink className="w-3 h-3" />
+              Object Profile
+            </Button>
+          </Link>
+
+          {type === "PLANET" || type === "MOON" ? (
+            <Link href={`/explore?system=solar-system&target=${objectSlug}`} className="w-full">
+              <Button variant="cyan" size="sm" className="w-full gap-1.5 font-mono text-xs">
+                <Compass className="w-3 h-3" />
+                Solar System 3D
+              </Button>
+            </Link>
+          ) : type === "STAR" ? (
+            <Link href={`/stars/${objectSlug}`} className="w-full">
+              <Button variant="cyan" size="sm" className="w-full gap-1.5 font-mono text-xs">
+                <Globe className="w-3 h-3" />
+                Star Catalog
+              </Button>
+            </Link>
+          ) : (
+            <Link href={`/deep-sky/${objectSlug}`} className="w-full">
+              <Button variant="cyan" size="sm" className="w-full gap-1.5 font-mono text-xs">
+                <Globe className="w-3 h-3" />
+                Deep Sky Atlas
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

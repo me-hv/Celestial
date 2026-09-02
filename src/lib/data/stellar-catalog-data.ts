@@ -790,7 +790,7 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
 
   // 21. WASP-12
   {
-    source_id: "3104829104829104899",
+    source_id: "3104829104829104901",
     designation: "WASP-12",
     bayer_flamsteed: "2MASS J06303279+2940202",
     ra_deg: 97.636,
@@ -817,7 +817,7 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
 
   // 22. HD 209458
   {
-    source_id: "4104829104829104899",
+    source_id: "4104829104829104902",
     designation: "HD 209458",
     bayer_flamsteed: "V376 Pegasi",
     hip_id: "108859",
@@ -848,7 +848,7 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
 
   // 23. Epsilon Indi
   {
-    source_id: "5104829104829104899",
+    source_id: "5104829104829104903",
     designation: "Epsilon Indi",
     bayer_flamsteed: "Epsilon Indi A",
     hip_id: "108870",
@@ -878,7 +878,7 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
 
   // 24. Kapteyn's Star
   {
-    source_id: "6104829104829104899",
+    source_id: "6104829104829104904",
     designation: "Kapteyn's Star",
     bayer_flamsteed: "VZ Pictoris",
     hip_id: "24186",
@@ -908,7 +908,7 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
 
   // 25. Teegarden's Star
   {
-    source_id: "7104829104829104899",
+    source_id: "7104829104829104905",
     designation: "Teegarden's Star",
     bayer_flamsteed: "2MASS J02530084+1652532",
     gliese_id: "GJ 1061",
@@ -936,7 +936,7 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
 
   // 26. Van Maanen's Star (Solitary White Dwarf)
   {
-    source_id: "8104829104829104899",
+    source_id: "8104829104829104906",
     designation: "Van Maanen 2",
     bayer_flamsteed: "Van Maanen's Star",
     hip_id: "3829",
@@ -1022,19 +1022,38 @@ export const RAW_STELLAR_CATALOG_RECORDS: RawGaiaStarRecord[] = [
   },
 ];
 
+export function generateDeterministicStarId(sourceId: string, slug?: string): string {
+  const seed = `gaia-dr3:${sourceId}:${slug || ""}`;
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  let h3 = 0x9e3779b9;
+  let h4 = 0x85ebca6b;
+  for (let i = 0; i < seed.length; i++) {
+    const ch = seed.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+    h3 = Math.imul(h3 ^ ch, 2246822507);
+    h4 = Math.imul(h4 ^ ch, 3266489917);
+  }
+  const hex1 = (h1 >>> 0).toString(16).padStart(8, "0");
+  const hex2 = (h2 >>> 0).toString(16).padStart(8, "0");
+  const hex3 = (h3 >>> 0).toString(16).padStart(8, "0");
+  const hex4 = (h4 >>> 0).toString(16).padStart(8, "0");
+  const hex = hex1 + hex2 + hex3 + hex4;
+
+  return `c0000000-${hex.slice(0, 4)}-4${hex.slice(4, 7)}-8${hex.slice(7, 10)}-${hex.slice(10, 22)}`;
+}
+
 // Helper to normalize and validate all records into domain CelestialObject entities
 export function createStellarCatalogEntities(): CelestialObject[] {
   return RAW_STELLAR_CATALOG_RECORDS.map((raw) => {
     const partial = normalizer.normalize(raw);
-    const cleanId = raw.source_id
-      .replace(/[^0-9]/g, "")
-      .padStart(12, "0")
-      .slice(-12);
-    const id = `c0000000-0000-4000-8000-${cleanId}`;
+    const slug = partial.slug || `star-${raw.source_id}`;
+    const id = generateDeterministicStarId(raw.source_id, slug);
 
     const entity: CelestialObject = {
       id,
-      slug: partial.slug || `star-${raw.source_id}`,
+      slug,
       canonicalName: partial.canonicalName || `Star ${raw.source_id}`,
       standardDesignation: partial.standardDesignation,
       classification: partial.classification!,

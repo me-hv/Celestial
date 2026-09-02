@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +12,36 @@ import { ObserverLocationModal } from "@/features/sky/components/ObserverLocatio
 import { Telescope, MapPin, ArrowLeft } from "lucide-react";
 
 export default function ObservationPlannerPage() {
+  const searchParams = useSearchParams();
   const [location, setLocation] = useState<ObserverLocation>(PRESET_OBSERVER_LOCATIONS[0]);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [date] = useState<Date>(new Date());
+  const [date] = useState<Date>(() => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      const parsed = new Date(dateParam);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return new Date();
+  });
+
+  useEffect(() => {
+    const lat = searchParams.get("lat");
+    const lon = searchParams.get("lon");
+    if (lat && lon) {
+      const parsedLat = parseFloat(lat);
+      const parsedLon = parseFloat(lon);
+      if (!isNaN(parsedLat) && !isNaN(parsedLon)) {
+        setLocation({
+          id: "custom-location",
+          name: searchParams.get("loc") || "Custom Observer Location",
+          latitudeDeg: parsedLat,
+          longitudeDeg: parsedLon,
+          elevationMeters: 0,
+          timezone: "UTC",
+        });
+      }
+    }
+  }, [searchParams]);
 
   return (
     <div className="flex-1 py-8 space-y-6">

@@ -73,6 +73,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "Fe", percentage: 0.16 },
         { molecule: "Ne", percentage: 0.12 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceLightYears: 0.0,
@@ -118,6 +119,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "H2", percentage: 22.0 },
         { molecule: "He", percentage: 6.0 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 0.387,
@@ -171,6 +173,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "N2", percentage: 3.5 },
         { molecule: "SO2", percentage: 0.015 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 0.723,
@@ -226,6 +229,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "Ar", percentage: 0.93 },
         { molecule: "CO2", percentage: 0.04 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 1.0,
@@ -280,6 +284,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "H2", percentage: 22.0 },
         { molecule: "Ar", percentage: 20.0 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceKm: 384400,
@@ -331,6 +336,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "Ar", percentage: 1.9 },
         { molecule: "O2", percentage: 0.13 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 1.524,
@@ -384,6 +390,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "He", percentage: 10.2 },
         { molecule: "CH4", percentage: 0.3 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 5.204,
@@ -436,6 +443,14 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "He", percentage: 3.25 },
         { molecule: "CH4", percentage: 0.45 },
       ],
+      hasRingSystem: true,
+      ringSystem: {
+        innerRadiusKm: 67000,
+        outerRadiusKm: 140000,
+        opacity: 0.85,
+        color: "#E2D4A8",
+        inclinationDeg: 26.73,
+      },
     },
     positional: {
       distanceAu: 9.537,
@@ -488,6 +503,9 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "He", percentage: 15.2 },
         { molecule: "CH4", percentage: 2.3 },
       ],
+      // Note: Scientifically Uranus possesses a faint ring system discovered in 1977,
+      // but under current CELESTIAL visual specification, prominent rings are reserved for Saturn.
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 19.191,
@@ -541,6 +559,7 @@ export const SOLAR_SYSTEM_OBJECTS: CelestialObject[] = [
         { molecule: "He", percentage: 19.0 },
         { molecule: "CH4", percentage: 1.5 },
       ],
+      hasRingSystem: false,
     },
     positional: {
       distanceAu: 30.069,

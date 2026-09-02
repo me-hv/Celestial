@@ -74,6 +74,16 @@ export interface PhysicalProperties {
     percentage: number;
   }>;
 
+  // Planetary Ring System
+  hasRingSystem?: boolean;
+  ringSystem?: {
+    innerRadiusKm?: number;
+    outerRadiusKm?: number;
+    opacity?: number;
+    color?: string;
+    inclinationDeg?: number;
+  };
+
   // Explicit Uncertainty Records for Scientific Honesty
   measurementsWithUncertainty?: {
     massEarth?: ScientificMeasurement<number>;

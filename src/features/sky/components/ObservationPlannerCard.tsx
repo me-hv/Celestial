@@ -179,26 +179,37 @@ export function ObservationPlannerCard({
                   <span className="text-emerald-400 font-bold">{target.observingScore}/100</span>
                 </td>
                 <td className="py-2.5 px-3 text-right">
-                  {onSelectTarget ? (
-                    <Button
-                      onClick={() => onSelectTarget(target.objectSlug)}
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 text-[10px] font-mono text-celestial-cyan hover:bg-celestial-cyan/10"
-                    >
-                      Focus
-                    </Button>
-                  ) : (
-                    <Link href={`/sky?target=${target.objectSlug}`}>
+                  <div className="flex items-center justify-end gap-1">
+                    <Link href={`/research?target=${target.objectSlug}`}>
                       <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 text-[10px] font-mono text-celestial-purple hover:bg-celestial-purple/10"
+                      >
+                        Research
+                      </Button>
+                    </Link>
+                    {onSelectTarget ? (
+                      <Button
+                        onClick={() => onSelectTarget(target.objectSlug)}
                         variant="ghost"
                         size="sm"
                         className="h-6 text-[10px] font-mono text-celestial-cyan hover:bg-celestial-cyan/10"
                       >
                         Focus
                       </Button>
-                    </Link>
-                  )}
+                    ) : (
+                      <Link href={`/sky?target=${target.objectSlug}`}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-[10px] font-mono text-celestial-cyan hover:bg-celestial-cyan/10"
+                        >
+                          Focus
+                        </Button>
+                      </Link>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

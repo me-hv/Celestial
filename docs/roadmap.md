@@ -152,5 +152,43 @@ This document outlines the phased development path for **CELESTIAL**.
 │  - Night Sky Observation Session Planner with magnitude limits         │
 │  - Universal search-to-sky integration & multi-catalog resolution      │
 │  - Dedicated routes: /sky, /sky/events, /sky/planner, /where-is/[slug] │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  Phase 11: Space Missions, Spacecraft & Discoveries  [COMPLETED]       │
+│  - SpaceMission, Spacecraft, Instrument, Discovery domain models & Zod │
+│  - Authoritative dataset of 18 historical & active space missions      │
+│  - Multi-component missions (Cassini+Huygens, Apollo 11, Mars 2020)    │
+│  - Interactive 3D Heliocentric Trajectory viewport & Catmull-Rom spline│
+│  - Interactive timeline scrubber, speed multiplier & milestone stepping│
+│  - Live speed/distance telemetry HUD & tracking camera mode            │
+│  - Scientific Discoveries Archive with epistemic classifications & DOI │
+│  - Universal Search indexing for missions, spacecraft & discoveries    │
+│  - Bidirectional links: Mission -> Target Objects & Object -> Missions │
+│  - Dedicated routes: /missions, /missions/[slug], /spacecraft, /disc.  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  Phase 11.5: Global Space Mission & Org Registry  [COMPLETED]          │
+│  - Global Space & Research Organization Registry (33+ institutions)   │
+│  - Multi-agency participation matrix (Lead, Builder, Payload, Science) │
+│  - Global geographic representation (ISRO, JAXA, CNSA, Roscosmos, etc.)│
+│  - Historic Soviet space exploration (1955–1991) strict attribution    │
+│  - Public scientific data archive linkages (ISSDC, DARTS, PSA, PDS)    │
+│  - Multi-region & country filtering across missions and organizations  │
+│  - Dedicated routes: /organizations, /organizations/[slug]             │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│  Phase 12: Target Intelligence & Observatories  [COMPLETED]            │
+│  - Multi-Wavelength Ground & Space Observatories (15+ facilities)     │
+│  - Unified Target Intelligence Engine across all astronomical domains  │
+│  - Observation Intelligence & Multi-Wavelength Coverage Radar Matrix   │
+│  - Scientific Relation Graph (Nodes, Edges, Cross-Domain Associations) │
+│  - Observing List Manager with local storage & export/import           │
+│  - Dedicated routes: /observatories, /observatories/[slug], /research  │
 └────────────────────────────────────────────────────────────────────────┘
 ```

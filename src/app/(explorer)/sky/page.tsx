@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, Suspense, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Container } from "@/components/ui/container";
 import { Badge } from "@/components/ui/badge";
@@ -17,20 +17,74 @@ import { CelestialSkyView2D } from "@/features/visualization/sky/CelestialSkyVie
 import { SkyControlsBar, SkyViewMode } from "@/features/sky/components/SkyControlsBar";
 import { ObserverLocationModal } from "@/features/sky/components/ObserverLocationModal";
 import { SkyTelemetryPanel } from "@/features/sky/components/SkyTelemetryPanel";
+import { WhatsVisibleTonightCard } from "@/features/sky/components/WhatsVisibleTonightCard";
+import { SkyTimelineCard } from "@/features/sky/components/SkyTimelineCard";
 import { Telescope, Calendar, Sparkles, Search } from "lucide-react";
 import Link from "next/link";
 
-export default function SkyPage() {
+function SkyExplorerContent() {
   const searchParams = useSearchParams();
   const targetParam = searchParams.get("target");
+  const latParam = searchParams.get("lat");
+  const lonParam = searchParams.get("lon");
+  const dateParam = searchParams.get("date");
+  const modeParam = searchParams.get("mode") as SkyViewMode | null;
 
-  // 1. Observer Location & Time State
-  const [location, setLocation] = useState<ObserverLocation>(PRESET_OBSERVER_LOCATIONS[0]);
+  // 1. Observer Location State (with local-first persistence)
+  const [location, setLocation] = useState<ObserverLocation>(() => {
+    if (latParam && lonParam) {
+      const lat = parseFloat(latParam);
+      const lon = parseFloat(lonParam);
+      if (!isNaN(lat) && !isNaN(lon)) {
+        return {
+          id: "loc-custom-url",
+          name: `Custom Location (${lat.toFixed(2)}°, ${lon.toFixed(2)}°)`,
+          latitudeDeg: lat,
+          longitudeDeg: lon,
+          elevationMeters: 0,
+          timezone: "UTC",
+          isCustom: true,
+        };
+      }
+    }
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("celestial_observer_location");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed.latitudeDeg === "number") return parsed;
+        }
+      } catch {
+        // Fallback to Greenwich
+      }
+    }
+    return PRESET_OBSERVER_LOCATIONS[0];
+  });
+
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
-  const [date, setDate] = useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(() => {
+    if (dateParam) {
+      const parsed = new Date(dateParam);
+      if (!isNaN(parsed.getTime())) return parsed;
+    }
+    return new Date();
+  });
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [timeSpeed, setTimeSpeed] = useState<number>(1);
-  const [viewMode, setViewMode] = useState<SkyViewMode>("3D_SPHERE");
+  const [viewMode, setViewMode] = useState<SkyViewMode>(modeParam || "3D_SPHERE");
+  const [isTracked, setIsTracked] = useState(false);
+
+  const handleSetLocation = (newLoc: ObserverLocation) => {
+    setLocation(newLoc);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("celestial_observer_location", JSON.stringify(newLoc));
+      } catch {
+        // Storage quota or error
+      }
+    }
+  };
 
   // 2. Search & Selection State
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +92,7 @@ export default function SkyPage() {
 
   // Sync target param from URL
   useEffect(() => {
-    if (targetParam) {
+    if (targetParam && targetParam !== selectedSlug) {
       setSelectedSlug(targetParam);
     }
   }, [targetParam]);
@@ -68,11 +122,15 @@ export default function SkyPage() {
     return skyObjectRepo.searchSky(searchQuery, location, date);
   }, [searchQuery, location, date]);
 
+  const handleSelectObject = useCallback((slug: string) => {
+    setSelectedSlug(slug);
+  }, []);
+
   return (
-    <div className="flex-1 py-8 space-y-6">
+    <div className="flex-1 py-6 space-y-6">
       <Container size="xl" className="space-y-6">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-celestial-muted/70 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-celestial-muted/70 pb-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Telescope className="w-6 h-6 text-celestial-cyan" />
@@ -80,12 +138,11 @@ export default function SkyPage() {
                 Night Sky Observer & Live Observatory
               </h1>
             </div>
-            <p className="text-sm text-celestial-subtle">
-              Real-time celestial sphere projection and live astronomical ephemeris from ground
-              coordinates
+            <p className="text-sm text-celestial-subtle font-mono">
+              Real-time celestial sphere projection, Alt/Az astrometry, and planetary ephemerides
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link href="/sky/events">
               <Button
                 variant="outline"
@@ -93,7 +150,7 @@ export default function SkyPage() {
                 className="font-mono text-xs gap-1.5 border-celestial-muted/80"
               >
                 <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                Events
+                Events Schedule
               </Button>
             </Link>
             <Link href="/sky/planner">
@@ -122,7 +179,7 @@ export default function SkyPage() {
           onTogglePlay={() => setIsPlaying(!isPlaying)}
           timeSpeed={timeSpeed}
           onCycleTimeSpeed={() => {
-            const speeds = [1, 10, 100, 1000];
+            const speeds = [1, 10, 100, 1000, 10000];
             const nextIdx = (speeds.indexOf(timeSpeed) + 1) % speeds.length;
             setTimeSpeed(speeds[nextIdx]);
           }}
@@ -153,7 +210,7 @@ export default function SkyPage() {
                 <button
                   key={obs.objectId}
                   onClick={() => {
-                    setSelectedSlug(obs.objectSlug);
+                    handleSelectObject(obs.objectSlug);
                     setSearchQuery("");
                   }}
                   className="w-full flex items-center justify-between p-2 rounded-lg text-left text-xs font-mono hover:bg-celestial-void transition text-celestial-starlight"
@@ -178,52 +235,69 @@ export default function SkyPage() {
 
         {/* Main Explorer Workspace (Canvas + Telemetry) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Visualizer Canvas */}
-          <div className="lg:col-span-8 min-h-[620px]">
-            {viewMode === "3D_SPHERE" && (
-              <CelestialSkyScene3D
-                location={location}
-                date={date}
-                objects={visibleObjects}
-                selectedObjectId={selectedObservation?.objectId}
-                onSelectObject={(obs) => setSelectedSlug(obs.objectSlug)}
-              />
-            )}
-            {viewMode === "2D_PLANISPHERE" && (
-              <AllSkyPlanisphere2D
-                location={location}
-                date={date}
-                objects={visibleObjects}
-                selectedObjectId={selectedObservation?.objectId}
-                onSelectObject={(obs) => setSelectedSlug(obs.objectSlug)}
-              />
-            )}
-            {viewMode === "2D_EQUATORIAL" && (
-              <CelestialSkyView2D
-                objects={visibleObjects.map((obs) => ({
-                  id: obs.objectId,
-                  slug: obs.objectSlug,
-                  canonicalName: obs.canonicalName,
-                  standardDesignation: obs.standardDesignation,
-                  aliases: [],
-                  classification: {
-                    category: obs.category as unknown as CelestialCategory,
-                    code: obs.type as unknown as CelestialClassificationCode,
-                  },
-                  physical: { apparentMagnitudeV: obs.apparentMagnitudeV },
-                  positional: { rightAscensionDeg: obs.raDeg, declinationDeg: obs.decDeg },
-                  provenance: obs.provenance,
-                  summary: `Observed in ${obs.constellation}`,
-                }))}
-                selectedObjectId={selectedObservation?.objectId}
-                onSelectObject={(obj) => setSelectedSlug(obj.slug)}
-              />
-            )}
+          {/* Main Visualizer Canvas & Timeline */}
+          <div className="lg:col-span-8 min-h-[620px] flex flex-col space-y-6">
+            <div className="flex-1 min-h-[580px]">
+              {viewMode === "3D_SPHERE" && (
+                <CelestialSkyScene3D
+                  location={location}
+                  date={date}
+                  objects={visibleObjects}
+                  selectedObjectId={selectedObservation?.objectId}
+                  isTracked={isTracked}
+                  onSelectObject={(obs) => handleSelectObject(obs.objectSlug)}
+                />
+              )}
+              {viewMode === "2D_PLANISPHERE" && (
+                <AllSkyPlanisphere2D
+                  location={location}
+                  date={date}
+                  objects={visibleObjects}
+                  selectedObjectId={selectedObservation?.objectId}
+                  onSelectObject={(obs) => handleSelectObject(obs.objectSlug)}
+                />
+              )}
+              {viewMode === "2D_EQUATORIAL" && (
+                <CelestialSkyView2D
+                  objects={visibleObjects.map((obs) => ({
+                    id: obs.objectId,
+                    slug: obs.objectSlug,
+                    canonicalName: obs.canonicalName,
+                    standardDesignation: obs.standardDesignation,
+                    aliases: [],
+                    classification: {
+                      category: obs.category as unknown as CelestialCategory,
+                      code: obs.type as unknown as CelestialClassificationCode,
+                    },
+                    physical: { apparentMagnitudeV: obs.apparentMagnitudeV },
+                    positional: { rightAscensionDeg: obs.raDeg, declinationDeg: obs.decDeg },
+                    provenance: obs.provenance,
+                    summary: `Observed in ${obs.constellation}`,
+                  }))}
+                  selectedObjectId={selectedObservation?.objectId}
+                  onSelectObject={(obj) => handleSelectObject(obj.slug)}
+                />
+              )}
+            </div>
+
+            {/* Night Observation Timeline Bar */}
+            <SkyTimelineCard location={location} date={date} onDateChange={setDate} />
+
+            {/* "What's Visible Tonight?" Workspace Card */}
+            <WhatsVisibleTonightCard
+              objects={visibleObjects}
+              selectedObjectId={selectedObservation?.objectId}
+              onSelectObject={(obs) => handleSelectObject(obs.objectSlug)}
+            />
           </div>
 
           {/* Right Observational Telemetry Side Panel */}
           <div className="lg:col-span-4 space-y-4">
-            <SkyTelemetryPanel observation={selectedObservation} />
+            <SkyTelemetryPanel
+              observation={selectedObservation}
+              isTracked={isTracked}
+              onToggleTrack={() => setIsTracked(!isTracked)}
+            />
           </div>
         </div>
 
@@ -232,9 +306,17 @@ export default function SkyPage() {
           isOpen={isLocationModalOpen}
           onClose={() => setIsLocationModalOpen(false)}
           currentLocation={location}
-          onSelectLocation={setLocation}
+          onSelectLocation={handleSetLocation}
         />
       </Container>
     </div>
+  );
+}
+
+export default function SkyPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 bg-celestial-void" />}>
+      <SkyExplorerContent />
+    </Suspense>
   );
 }

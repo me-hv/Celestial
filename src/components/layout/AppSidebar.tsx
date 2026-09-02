@@ -23,6 +23,9 @@ import {
   Eye,
   Activity,
   Home,
+  BookOpen,
+  Building2,
+  Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -163,9 +166,46 @@ export const SIDEBAR_NAV_SECTIONS: NavSection[] = [
     items: [
       {
         href: "/missions",
-        label: "Missions",
-        description: "Historic voyages and robotic probes",
+        label: "Missions Hub",
+        description: "Spacecraft, trajectories & flights",
         icon: Rocket,
+        exact: true,
+      },
+      {
+        href: "/missions/discoveries",
+        label: "Discoveries",
+        description: "Authoritative science breakthroughs",
+        icon: Sparkles,
+      },
+    ],
+  },
+  {
+    title: "RESEARCH",
+    items: [
+      {
+        href: "/research",
+        label: "Research Hub",
+        description: "Unified target intelligence & evidence",
+        icon: BookOpen,
+        exact: true,
+      },
+      {
+        href: "/observatories",
+        label: "Observatories",
+        description: "Global & orbital facilities",
+        icon: Telescope,
+      },
+      {
+        href: "/organizations",
+        label: "Organizations",
+        description: "Global space agencies & institutes",
+        icon: Building2,
+      },
+      {
+        href: "/datasets",
+        label: "Datasets",
+        description: "PDS4 & multi-agency data archive",
+        icon: Database,
       },
     ],
   },

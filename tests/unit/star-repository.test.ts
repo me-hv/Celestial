@@ -97,4 +97,22 @@ describe("StarRepository & Stellar Catalog", () => {
     expect(gjSearch.results.length).toBeGreaterThan(0);
     expect(gjSearch.results[0].canonicalName).toBe("Barnard's Star");
   });
+
+  it("ensures all stars have strictly unique IDs and slugs", () => {
+    const allStars = starRepo.getAll();
+    const ids = new Set<string>();
+    const slugs = new Set<string>();
+
+    allStars.forEach((star) => {
+      if (ids.has(star.id)) {
+        throw new Error(`Duplicate star ID found: ${star.id} for star ${star.canonicalName}`);
+      }
+      ids.add(star.id);
+
+      if (slugs.has(star.slug)) {
+        throw new Error(`Duplicate star slug found: ${star.slug} for star ${star.canonicalName}`);
+      }
+      slugs.add(star.slug);
+    });
+  });
 });

@@ -114,9 +114,23 @@ function ExploreContent() {
 
   return (
     <div className="relative flex-1 flex flex-col h-[calc(100vh-3.5rem)] overflow-hidden bg-celestial-void">
+      {/* Main 3D Three.js Interactive Scene Viewport */}
+      <div className="absolute inset-0 w-full h-full">
+        <StellarSystemScene
+          key={currentSystem.slug}
+          systemSlug={currentSystem.slug}
+          selectedObjectId={selectedObject?.id}
+          focusedObjectId={focusedObjectId}
+          showOrbits={showOrbits}
+          showHabitableZone={showHabitableZone}
+          onObjectSelect={handleSelectObject}
+          className="w-full h-full"
+        />
+      </div>
+
       {/* Top Floating Explorer Controls: Search + System Selector */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3 pointer-events-none">
-        <div className="pointer-events-auto w-full sm:w-auto">
+      <div className="absolute top-4 left-4 right-4 z-20 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="w-full sm:w-auto">
           <ExplorerSearchBar
             onSelectObject={(obj) => {
               handleSelectObject(obj);
@@ -124,7 +138,7 @@ function ExploreContent() {
           />
         </div>
 
-        <div className="pointer-events-auto">
+        <div>
           <SystemSelector
             currentSystemSlug={currentSystem.slug}
             onSelectSystem={handleSystemChange}
@@ -133,8 +147,8 @@ function ExploreContent() {
       </div>
 
       {/* Bottom Floating Control Bar */}
-      <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-center pointer-events-none">
-        <div className="pointer-events-auto w-full max-w-5xl p-2 rounded-2xl border border-celestial-muted/80 bg-celestial-surface/85 backdrop-blur-xl shadow-2xl">
+      <div className="absolute bottom-4 left-4 right-4 z-20 flex justify-center">
+        <div className="w-full max-w-5xl p-2 rounded-2xl border border-celestial-muted/80 bg-celestial-surface/85 backdrop-blur-xl shadow-2xl">
           <ExplorerControls
             objects={systemObjects}
             selectedObjectId={selectedObject?.id}
@@ -150,20 +164,6 @@ function ExploreContent() {
             onOpenScaleInfo={() => setIsScaleModalOpen(true)}
           />
         </div>
-      </div>
-
-      {/* Main 3D Three.js Interactive Scene Viewport */}
-      <div className="flex-1 w-full h-full">
-        <StellarSystemScene
-          key={currentSystem.slug}
-          systemSlug={currentSystem.slug}
-          selectedObjectId={selectedObject?.id}
-          focusedObjectId={focusedObjectId}
-          showOrbits={showOrbits}
-          showHabitableZone={showHabitableZone}
-          onObjectSelect={handleSelectObject}
-          className="w-full h-full"
-        />
       </div>
 
       {/* Floating Scientific Telemetry Data Card */}

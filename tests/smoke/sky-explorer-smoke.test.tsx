@@ -10,11 +10,13 @@ import { WhereIsObjectCard } from "@/features/sky/components/WhereIsObjectCard";
 import { AstronomicalEventsCard } from "@/features/sky/components/AstronomicalEventsCard";
 import { ObservationPlannerCard } from "@/features/sky/components/ObservationPlannerCard";
 import { ObserverLocationModal } from "@/features/sky/components/ObserverLocationModal";
+import { WhatsVisibleTonightCard } from "@/features/sky/components/WhatsVisibleTonightCard";
 
 describe("Sky Explorer Smoke & UI Rendering Tests", () => {
   const location = PRESET_OBSERVER_LOCATIONS[0];
   const date = new Date();
   const siriusObs = skyObjectRepo.getSkyObservation("sirius-a", location, date)!;
+  const visibleObjects = skyObjectRepo.getVisibleSkyObjects(location, date);
   const eventsReport = calculateAstronomicalEvents(location, date);
 
   it("renders SkyControlsBar correctly", () => {
@@ -43,7 +45,20 @@ describe("Sky Explorer Smoke & UI Rendering Tests", () => {
     render(<SkyTelemetryPanel observation={siriusObs} />);
     expect(screen.getByText("Sirius A")).toBeDefined();
     expect(screen.getByText("Canis Major")).toBeDefined();
-    expect(screen.getByText("Open Full Astronomical Profile")).toBeDefined();
+    expect(screen.getByText("Object Profile")).toBeDefined();
+  });
+
+  it("renders WhatsVisibleTonightCard correctly", () => {
+    render(
+      <WhatsVisibleTonightCard
+        objects={visibleObjects}
+        selectedObjectId={siriusObs.objectId}
+        onSelectObject={vi.fn()}
+      />
+    );
+    expect(screen.getByText(/What's Visible Tonight/i)).toBeDefined();
+    expect(screen.getByText(/Best Tonight/i)).toBeDefined();
+    expect(screen.getByText(/High in Sky/i)).toBeDefined();
   });
 
   it("renders WhereIsObjectCard correctly", () => {

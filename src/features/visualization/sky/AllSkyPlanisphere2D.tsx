@@ -3,6 +3,10 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { ObserverLocation, SkyObjectObservation } from "@/domain/observer/types";
 import { constellationRepo } from "@/lib/data/constellation-repository";
+import {
+  projectHorizontalTo2D,
+  CelestialProjectionType,
+} from "@/lib/astronomy/coordinates/projections";
 import { Compass, ZoomIn, ZoomOut, RotateCcw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -27,24 +31,20 @@ export function AllSkyPlanisphere2D({
   const [hoveredObject, setHoveredObject] = useState<SkyObjectObservation | null>(null);
   const [zoom, setZoom] = useState(1.0);
   const [showConstellations, setShowConstellations] = useState(true);
+  const [projection, setProjection] = useState<CelestialProjectionType>("AZIMUTHAL_EQUIDISTANT");
 
-  // Helper: Map (Alt, Az) to 2D Planisphere (x, y) coordinates
-  // Center is Zenith (alt = 90), boundary is Horizon (alt = 0)
-  // East is Left (astronomical looking up convention), North is Top
+  // Helper: Map (Alt, Az) to 2D Planisphere (x, y) coordinates via Projections Engine
   const project = useCallback(
     (altDeg: number, azDeg: number, centerX: number, centerY: number, maxRadius: number) => {
-      // Clamped to visible sky above horizon
-      const clampedAlt = Math.max(0.0, Math.min(90.0, altDeg));
-      const r = maxRadius * ((90.0 - clampedAlt) / 90.0);
-      const azRad = (azDeg * Math.PI) / 180.0;
-
-      // In astronomy sky maps (facing up): East is Left, North is Top, West is Right, South is Bottom
-      const x = centerX - r * Math.sin(azRad);
-      const y = centerY - r * Math.cos(azRad);
-
-      return { x, y, r };
+      const pt = projectHorizontalTo2D(
+        altDeg,
+        azDeg,
+        { centerX, centerY, maxRadius, zoom },
+        projection
+      );
+      return { x: pt.x, y: pt.y, r: Math.sqrt((pt.x - centerX) ** 2 + (pt.y - centerY) ** 2) };
     },
-    []
+    [projection, zoom]
   );
 
   useEffect(() => {
@@ -265,7 +265,43 @@ export function AllSkyPlanisphere2D({
       />
 
       {/* Floating Canvas Controls */}
-      <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-xl bg-celestial-surface/85 border border-celestial-muted/80 backdrop-blur-md">
+      <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-xl bg-celestial-surface/85 border border-celestial-muted/80 backdrop-blur-md flex-wrap">
+        <div className="flex items-center bg-celestial-void/60 rounded-lg p-0.5 border border-celestial-muted/50 text-[10px] font-mono">
+          <button
+            onClick={() => setProjection("AZIMUTHAL_EQUIDISTANT")}
+            className={`px-2 py-1 rounded transition ${
+              projection === "AZIMUTHAL_EQUIDISTANT"
+                ? "bg-celestial-cyan/20 text-celestial-cyan font-bold"
+                : "text-celestial-subtle hover:text-celestial-starlight"
+            }`}
+            title="Azimuthal Equidistant (Linear Zenith Angle)"
+          >
+            Equidistant
+          </button>
+          <button
+            onClick={() => setProjection("STEREOGRAPHIC")}
+            className={`px-2 py-1 rounded transition ${
+              projection === "STEREOGRAPHIC"
+                ? "bg-celestial-cyan/20 text-celestial-cyan font-bold"
+                : "text-celestial-subtle hover:text-celestial-starlight"
+            }`}
+            title="Stereographic (Conformal, true shape preservation)"
+          >
+            Stereographic
+          </button>
+          <button
+            onClick={() => setProjection("ORTHOGRAPHIC")}
+            className={`px-2 py-1 rounded transition ${
+              projection === "ORTHOGRAPHIC"
+                ? "bg-celestial-cyan/20 text-celestial-cyan font-bold"
+                : "text-celestial-subtle hover:text-celestial-starlight"
+            }`}
+            title="Orthographic (Perspective 3D dome)"
+          >
+            Orthographic
+          </button>
+        </div>
+
         <Button
           variant="ghost"
           size="sm"
@@ -308,7 +344,15 @@ export function AllSkyPlanisphere2D({
       <div className="absolute top-4 left-4 z-10 font-mono text-[11px] text-celestial-subtle bg-celestial-surface/85 px-3 py-1.5 rounded-lg border border-celestial-muted/80 backdrop-blur-md pointer-events-none">
         <div className="flex items-center gap-1.5 text-celestial-starlight font-semibold">
           <Compass className="w-3.5 h-3.5 text-celestial-cyan" />
-          <span>All-Sky Planisphere (Zenith-Centered Azimuthal Projection)</span>
+          <span>
+            All-Sky Planisphere (
+            {projection === "AZIMUTHAL_EQUIDISTANT"
+              ? "Azimuthal Equidistant Projection"
+              : projection === "STEREOGRAPHIC"
+                ? "Conformal Stereographic Projection"
+                : "Orthographic Dome Projection"}
+            )
+          </span>
         </div>
       </div>
     </div>

@@ -10,6 +10,7 @@ import {
   Compass,
   Layers,
   Sparkles,
+  Telescope,
 } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Button } from "@/components/ui/button";
@@ -83,6 +84,17 @@ export default async function ObjectDetailPage({ params }: ObjectDetailPageProps
             </Button>
           </Link>
           <div className="flex items-center gap-2">
+            <Link href={`/sky?target=${object.slug}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 font-mono text-xs border-celestial-cyan/40 text-celestial-starlight hover:text-celestial-cyan"
+                title="Observe this object in live sky"
+              >
+                <Telescope className="w-3.5 h-3.5 text-celestial-cyan" />
+                <span>Observe in Sky</span>
+              </Button>
+            </Link>
             {hostSystem && (
               <Link href={`/systems/${hostSystem.slug}`}>
                 <Button variant="secondary" size="sm" className="gap-1.5 font-mono text-xs">

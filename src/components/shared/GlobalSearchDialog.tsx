@@ -13,6 +13,10 @@ import {
   Clock,
   Radio,
   Compass,
+  Rocket,
+  Cpu,
+  Telescope,
+  Building2,
   X,
   CornerDownLeft,
 } from "lucide-react";
@@ -101,6 +105,18 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
         return `/explore?system=solar-system&target=${item.slug}`;
       case "EXOPLANET":
         return item.hostSystemId ? `/systems/${item.hostSystemId}` : `/systems`;
+      case "MISSION":
+        return `/missions/${item.slug}`;
+      case "SPACECRAFT":
+        return `/missions/spacecraft/${item.slug}`;
+      case "INSTRUMENT":
+        return item.missionSlug ? `/missions/${item.missionSlug}` : `/missions`;
+      case "DISCOVERY":
+        return `/missions/discoveries`;
+      case "OBSERVATORY":
+        return `/observatories/${item.slug}`;
+      case "ORGANIZATION":
+        return `/organizations/${item.slug}`;
       default:
         return `/objects/${item.slug}`;
     }
@@ -156,6 +172,17 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
         return <Radio className="w-4 h-4 text-rose-400" />;
       case "CONSTELLATION":
         return <Compass className="w-4 h-4 text-celestial-cyan" />;
+      case "MISSION":
+        return <Rocket className="w-4 h-4 text-celestial-cyan" />;
+      case "SPACECRAFT":
+        return <Telescope className="w-4 h-4 text-amber-400" />;
+      case "INSTRUMENT":
+        return <Cpu className="w-4 h-4 text-emerald-400" />;
+      case "DISCOVERY":
+        return <Sparkles className="w-4 h-4 text-purple-400" />;
+      case "OBSERVATORY":
+      case "ORGANIZATION":
+        return <Building2 className="w-4 h-4 text-primary" />;
       default:
         return <Globe2 className="w-4 h-4 text-celestial-cyan" />;
     }
@@ -185,6 +212,18 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
         return "bg-rose-500/10 text-rose-300 border-rose-500/30";
       case "CONSTELLATION":
         return "bg-sky-500/10 text-sky-300 border-sky-500/30";
+      case "MISSION":
+        return "bg-cyan-500/10 text-cyan-300 border-cyan-500/30";
+      case "SPACECRAFT":
+        return "bg-amber-500/10 text-amber-300 border-amber-500/30";
+      case "INSTRUMENT":
+        return "bg-emerald-500/10 text-emerald-300 border-emerald-500/30";
+      case "DISCOVERY":
+        return "bg-purple-500/10 text-purple-300 border-purple-500/30";
+      case "OBSERVATORY":
+        return "bg-indigo-500/10 text-indigo-300 border-indigo-500/30";
+      case "ORGANIZATION":
+        return "bg-primary/10 text-primary border-primary/30";
       default:
         return "bg-celestial-muted/60 text-celestial-starlight border-celestial-muted";
     }

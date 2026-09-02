@@ -60,7 +60,8 @@ export interface BodyMeshNode {
   group: THREE.Group;
   mesh: THREE.Mesh;
   hitMesh?: THREE.Mesh;
-  selectionRing?: THREE.Mesh;
+  ringMesh?: THREE.Mesh;
+  selectionRing?: THREE.Object3D;
   visualRadius: number;
 }
 
@@ -160,28 +161,42 @@ export function createCelestialBodyNode(
   hitMesh.userData = { objectId: object.id, slug: object.slug, celestialObject: object };
   group.add(hitMesh);
 
-  // Saturn's Ring System
-  if (object.slug === "saturn") {
-    const innerRingRadius = visualRadius * 1.4;
-    const outerRingRadius = visualRadius * 2.5;
+  // Planetary Ring System (Data-Driven: ONLY instantiated when object.physical.hasRingSystem or ringSystem is true)
+  const hasRingSystem = Boolean(object.physical.hasRingSystem || object.physical.ringSystem);
+  let ringMesh: THREE.Mesh | undefined;
+
+  if (hasRingSystem) {
+    const ringConfig = object.physical.ringSystem;
+    const innerRatio =
+      ringConfig?.innerRadiusKm && object.physical.meanRadiusKm
+        ? ringConfig.innerRadiusKm / object.physical.meanRadiusKm
+        : 1.4;
+    const outerRatio =
+      ringConfig?.outerRadiusKm && object.physical.meanRadiusKm
+        ? ringConfig.outerRadiusKm / object.physical.meanRadiusKm
+        : 2.5;
+
+    const innerRingRadius = visualRadius * innerRatio;
+    const outerRingRadius = visualRadius * outerRatio;
     const ringGeometry = new THREE.RingGeometry(innerRingRadius, outerRingRadius, 64);
     ringGeometry.rotateX(Math.PI / 2);
 
     const ringMaterial = new THREE.MeshStandardMaterial({
-      color: new THREE.Color("#E2D4A8"),
+      color: new THREE.Color(ringConfig?.color || "#E2D4A8"),
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.85,
+      opacity: ringConfig?.opacity ?? 0.85,
       roughness: 0.8,
     });
 
-    const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-    ringMesh.rotation.z = THREE.MathUtils.degToRad(26.73);
-    ringMesh.name = "saturn-rings";
+    ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
+    const inclination = ringConfig?.inclinationDeg ?? 26.73;
+    ringMesh.rotation.z = THREE.MathUtils.degToRad(inclination);
+    ringMesh.name = `rings-${object.slug}`;
     group.add(ringMesh);
   }
 
-  // Atmospheric Glow Ring for Earth/Venus
+  // Atmospheric Glow for Earth/Venus
   if (object.slug === "earth" || object.slug === "venus") {
     const atmoColor = object.slug === "earth" ? "#60A5FA" : "#FDE047";
     const atmoGeo = new THREE.SphereGeometry(visualRadius * 1.05, 32, 32);
@@ -195,17 +210,23 @@ export function createCelestialBodyNode(
     group.add(atmo);
   }
 
-  // Selection Indicator Ring (Reticle)
-  const selRingGeo = new THREE.RingGeometry(visualRadius * 1.35, visualRadius * 1.48, 48);
-  selRingGeo.rotateX(Math.PI / 2);
-  const selRingMat = new THREE.MeshBasicMaterial({
+  // Selection Indicator Reticle (Thin wireframe targeting ring, NOT a solid planetary ring disc)
+  const selPoints: THREE.Vector3[] = [];
+  const selSegments = 64;
+  const selRadius = visualRadius * 1.42;
+  for (let i = 0; i <= selSegments; i++) {
+    const theta = (i / selSegments) * Math.PI * 2;
+    selPoints.push(new THREE.Vector3(Math.cos(theta) * selRadius, 0, Math.sin(theta) * selRadius));
+  }
+  const selRingGeo = new THREE.BufferGeometry().setFromPoints(selPoints);
+  const selRingMat = new THREE.LineBasicMaterial({
     color: new THREE.Color("#38BDF8"),
-    side: THREE.DoubleSide,
     transparent: true,
     opacity: 0.0,
   });
-  const selectionRing = new THREE.Mesh(selRingGeo, selRingMat);
+  const selectionRing = new THREE.LineLoop(selRingGeo, selRingMat);
   selectionRing.name = "selection-ring";
+  selectionRing.visible = false;
   group.add(selectionRing);
 
   return {
@@ -213,6 +234,7 @@ export function createCelestialBodyNode(
     group,
     mesh,
     hitMesh,
+    ringMesh,
     selectionRing,
     visualRadius,
   };
@@ -220,6 +242,11 @@ export function createCelestialBodyNode(
 
 export function updateSelectionRingState(node: BodyMeshNode, isSelected: boolean): void {
   if (!node.selectionRing) return;
-  const mat = node.selectionRing.material as THREE.MeshBasicMaterial;
-  mat.opacity = isSelected ? 0.95 : 0.0;
+  node.selectionRing.visible = isSelected;
+  if ("material" in node.selectionRing) {
+    const mat = node.selectionRing.material as THREE.Material & { opacity?: number };
+    if (mat) {
+      mat.opacity = isSelected ? 0.95 : 0.0;
+    }
+  }
 }

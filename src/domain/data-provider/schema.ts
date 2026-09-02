@@ -1,0 +1,113 @@
+import { z } from "zod";
+import { EpistemicStatusSchema } from "../mission/schema";
+
+export const WavelengthBandSchema = z.enum([
+  "RADIO",
+  "MICROWAVE",
+  "INFRARED",
+  "OPTICAL",
+  "ULTRAVIOLET",
+  "XRAY",
+  "GAMMA_RAY",
+  "GRAVITATIONAL_WAVE",
+  "PARTICLE",
+  "MULTI_WAVELENGTH",
+]);
+
+export const ScientificDisciplineSchema = z.enum([
+  "PLANETARY_SCIENCE",
+  "ASTROPHYSICS",
+  "SOLAR_PHYSICS",
+  "COSMOLOGY",
+  "EXOPLANETARY_SCIENCE",
+  "ASTROMETRY",
+  "HELIOPHYSICS",
+  "ASTROBIOLOGY",
+  "GRAVITATIONAL_ASTRONOMY",
+]);
+
+export const DatasetDataTypeSchema = z.enum([
+  "IMAGERY",
+  "SPECTRA",
+  "LIGHT_CURVE",
+  "MAGNETIC_FIELD",
+  "RADAR_ALTIMETRY",
+  "PARTICLE_FLUX",
+  "POINT_CATALOG",
+  "TIME_SERIES",
+  "TELEMETRY",
+  "POLARIZATION",
+  "THERMAL_PROFILE",
+]);
+
+export const DataTransformationStepSchema = z.object({
+  stepIndex: z.number(),
+  stepName: z.string(),
+  description: z.string(),
+  sourceFileOrResource: z.string().optional(),
+  appliedAlgorithm: z.string(),
+  executionTimestamp: z.string(),
+  softwareVersion: z.string().optional(),
+  epistemicStatus: EpistemicStatusSchema,
+});
+
+export const ScientificDataProviderSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  name: z.string(),
+  acronym: z.string().optional(),
+  organizationId: z.string(),
+  organizationSlug: z.string(),
+  organizationName: z.string(),
+  baseUrl: z.string(),
+  documentationUrl: z.string().optional(),
+  license: z.string(),
+  updateFrequency: z.enum(["DAILY", "WEEKLY", "MONTHLY", "CONTINUOUS", "STATIC_RELEASE"]),
+  supportedDisciplines: z.array(ScientificDisciplineSchema),
+  epistemicRating: z.enum([
+    "OFFICIAL_AUTHORITY",
+    "PEER_REVIEWED",
+    "STANDARDIZED_CATALOG",
+    "DERIVED_PIPELINE",
+  ]),
+  summary: z.string(),
+});
+
+export const ScientificDatasetSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  title: z.string(),
+  description: z.string(),
+  providerId: z.string(),
+  providerSlug: z.string(),
+  providerName: z.string(),
+  organizationId: z.string(),
+  organizationSlug: z.string(),
+  organizationName: z.string(),
+  missionId: z.string().optional(),
+  missionSlug: z.string().optional(),
+  missionName: z.string().optional(),
+  spacecraftId: z.string().optional(),
+  spacecraftSlug: z.string().optional(),
+  spacecraftName: z.string().optional(),
+  instrumentIds: z.array(z.string()).optional(),
+  instrumentNames: z.array(z.string()).optional(),
+  targetSlugs: z.array(z.string()),
+  primaryTargetName: z.string(),
+  wavelengthBand: WavelengthBandSchema,
+  discipline: ScientificDisciplineSchema,
+  dataType: DatasetDataTypeSchema,
+  dataVersion: z.string(),
+  retrievalTimestamp: z.string(),
+  sourceUrl: z.string(),
+  downloadUrl: z.string().optional(),
+  landingPageUrl: z.string().optional(),
+  license: z.string(),
+  citationDoi: z.string().optional(),
+  sizeBytes: z.number().optional(),
+  recordCount: z.number().optional(),
+  epistemicStatus: EpistemicStatusSchema,
+  transformationHistory: z.array(DataTransformationStepSchema),
+  parametersMeasured: z.array(z.string()),
+  tags: z.array(z.string()),
+});

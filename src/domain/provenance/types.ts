@@ -12,18 +12,26 @@ export type AuthoritativeBody =
   | "SIMBAD" // CDS Strasbourg astronomical database
   | "MINOR_PLANET_CENTER" // Minor Planet Center (MPC)
   | "GAIA" // ESA Gaia Mission Data Release
-  | "PEER_REVIEWED_PAPER";
+  | "ISRO" // Indian Space Research Organisation
+  | "JAXA" // Japan Aerospace Exploration Agency
+  | "CNSA" // China National Space Administration
+  | "ROSKOSMOS" // Roscosmos State Space Corporation
+  | "SOVIET_ACADEMY_OF_SCIENCES" // Historical Soviet Academy of Sciences
+  | "KARI" // Korea Aerospace Research Institute
+  | "UAESA" // United Arab Emirates Space Agency
+  | "CNES" // Centre National d'Etudes Spatiales
+  | "DLR" // German Aerospace Center
+  | "ASI" // Italian Space Agency
+  | "UKSA" // UK Space Agency
+  | "CSA" // Canadian Space Agency
+  | "CSIRO" // Commonwealth Scientific and Industrial Research Organisation
+  | "EHT_COLLABORATION" // Event Horizon Telescope Collaboration
+  | "LVK_COLLABORATION" // LIGO-Virgo-KAGRA Collaboration
+  | "PEER_REVIEWED_PAPER"
+  | "OTHER_OFFICIAL_AGENCY"
+  | (string & {});
 
-export const AuthoritativeBodySchema = z.enum([
-  "IAU",
-  "NASA",
-  "ESA",
-  "ESO",
-  "SIMBAD",
-  "MINOR_PLANET_CENTER",
-  "GAIA",
-  "PEER_REVIEWED_PAPER",
-]);
+export const AuthoritativeBodySchema = z.string().min(1);
 
 export interface ProvenanceRecord {
   sourceId?: string;

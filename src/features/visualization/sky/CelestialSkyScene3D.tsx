@@ -14,6 +14,7 @@ export interface CelestialSkyScene3DProps {
   date: Date;
   objects: SkyObjectObservation[];
   selectedObjectId?: string;
+  isTracked?: boolean;
   onSelectObject?: (object: SkyObjectObservation) => void;
   className?: string;
 }
@@ -22,7 +23,8 @@ export function CelestialSkyScene3D({
   location,
   date,
   objects,
-  selectedObjectId: _selectedObjectId,
+  selectedObjectId,
+  isTracked = false,
   onSelectObject,
   className = "",
 }: CelestialSkyScene3DProps) {
@@ -31,7 +33,7 @@ export function CelestialSkyScene3D({
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
+  const selectionMarkerRef = useRef<THREE.Mesh | null>(null);
 
   // Layer Visibility Toggles
   const [showConstellations, setShowConstellations] = useState(true);
@@ -60,6 +62,36 @@ export function CelestialSkyScene3D({
     []
   );
 
+  // Focus and Track Camera toward selected object
+  useEffect(() => {
+    if (!selectedObjectId || !controlsRef.current) return;
+    const selected = objects.find((o) => o.objectId === selectedObjectId);
+    if (selected && selected.horizontal.isAboveHorizon) {
+      const targetPos = altAzToVector3(
+        selected.horizontal.apparentAltitudeDeg,
+        selected.horizontal.azimuthDeg,
+        100
+      );
+      // Orient camera look target
+      controlsRef.current.target.copy(targetPos);
+      controlsRef.current.update();
+
+      // Position selection reticle
+      if (selectionMarkerRef.current) {
+        const markerPos = altAzToVector3(
+          selected.horizontal.apparentAltitudeDeg,
+          selected.horizontal.azimuthDeg,
+          475
+        );
+        selectionMarkerRef.current.position.copy(markerPos);
+        selectionMarkerRef.current.lookAt(0, 0, 0);
+        selectionMarkerRef.current.visible = true;
+      }
+    } else if (selectionMarkerRef.current) {
+      selectionMarkerRef.current.visible = false;
+    }
+  }, [selectedObjectId, objects, date, isTracked, altAzToVector3]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
@@ -69,7 +101,7 @@ export function CelestialSkyScene3D({
 
     // 1. Scene & Camera Setup
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x030712); // Celestial void dark background
+    scene.background = new THREE.Color(0x030712);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(60, width / height, 1, 2000);
@@ -77,15 +109,20 @@ export function CelestialSkyScene3D({
     cameraRef.current = camera;
 
     // 2. WebGL Renderer
-    const renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      alpha: false,
-      powerPreference: "high-performance",
-    });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    container.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
+    let renderer: THREE.WebGLRenderer | null = null;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: false,
+        powerPreference: "high-performance",
+      });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+      rendererRef.current = renderer;
+    } catch {
+      return;
+    }
 
     // 3. OrbitControls configured for interior viewing
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -95,7 +132,7 @@ export function CelestialSkyScene3D({
     controls.enableZoom = true;
     controls.minDistance = 0.01;
     controls.maxDistance = 20;
-    controls.target.set(0, 5, 50); // Look towards North
+    controls.target.set(0, 5, 50); // Look towards North by default
     controlsRef.current = controls;
 
     // 4. Lighting
@@ -189,8 +226,6 @@ export function CelestialSkyScene3D({
 
     allConstellations.forEach((c) => {
       c.asterismLines.forEach((line) => {
-        // We project RA/Dec into current Horizontal coordinates
-        // Using approximate local conversion
         const startObs = objects.find(
           (o) =>
             Math.hypot(o.raDeg - line.startCoords.raDeg, o.decDeg - line.startCoords.decDeg) < 3.0
@@ -219,10 +254,7 @@ export function CelestialSkyScene3D({
     });
     scene.add(constGroup);
 
-    // 8. Build GPU Starfield & Celestial Point Cloud
-    const starsGroup = new THREE.Group();
-    starsGroup.name = "celestial-objects-group";
-
+    // 8. Build Celestial Point Cloud
     const positions: number[] = [];
     const colors: number[] = [];
     const sizes: number[] = [];
@@ -249,77 +281,73 @@ export function CelestialSkyScene3D({
         starColor = colorPalette.PLANET;
       } else if (obj.type === "MOON") {
         starColor = colorPalette.MOON;
-      } else if (
-        obj.type === "GALAXY" ||
-        obj.type === "NEBULA" ||
-        obj.type === "PLANETARY_NEBULA" ||
-        obj.type === "SUPERNOVA_REMNANT"
-      ) {
+      } else if (obj.category === "DEEP_SKY") {
         starColor = colorPalette.DSO;
       } else if (obj.spectralClass) {
-        const firstLetter = obj.spectralClass.charAt(0).toUpperCase() as keyof typeof colorPalette;
-        starColor = colorPalette[firstLetter] ?? colorPalette.A;
+        const primaryClass = obj.spectralClass.charAt(0).toUpperCase();
+        starColor = colorPalette[primaryClass as keyof typeof colorPalette] || colorPalette.A;
       }
 
       colors.push(starColor.r, starColor.g, starColor.b);
 
-      // Size scaled from visual magnitude (brighter = larger)
-      const mag = obj.apparentMagnitudeV ?? 5.0;
-      const pointSize = Math.max(3.0, (7.0 - mag) * 2.2);
+      const mag = obj.apparentMagnitudeV !== undefined ? obj.apparentMagnitudeV : 5.0;
+      const pointSize = Math.max(2.5, (6.0 - Math.min(6.0, mag)) * 3.5 + 3.0);
       sizes.push(pointSize);
     });
 
-    const starPointsGeom = new THREE.BufferGeometry();
-    starPointsGeom.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-    starPointsGeom.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    const particlesGeom = new THREE.BufferGeometry();
+    particlesGeom.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+    particlesGeom.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+    particlesGeom.setAttribute("size", new THREE.Float32BufferAttribute(sizes, 1));
 
-    const starPointsMat = new THREE.PointsMaterial({
-      size: 6.0,
+    const particlesMat = new THREE.PointsMaterial({
+      size: 4.5,
       vertexColors: true,
       transparent: true,
       opacity: 0.95,
       sizeAttenuation: false,
     });
 
-    const starPoints = new THREE.Points(starPointsGeom, starPointsMat);
-    starsGroup.add(starPoints);
-    scene.add(starsGroup);
+    const pointCloud = new THREE.Points(particlesGeom, particlesMat);
+    pointCloud.name = "star-points-cloud";
+    scene.add(pointCloud);
 
-    // 9. Cardinal Direction Beacons (N, NE, E, SE, S, SW, W, NW)
-    const cardinalGroup = new THREE.Group();
-    cardinalGroup.name = "cardinals-group";
-    const cardinals = [
-      { name: "N", az: 0 },
-      { name: "NE", az: 45 },
-      { name: "E", az: 90 },
-      { name: "SE", az: 135 },
-      { name: "S", az: 180 },
-      { name: "SW", az: 225 },
-      { name: "W", az: 270 },
-      { name: "NW", az: 315 },
+    // 9. Build Cardinal Direction Beacons
+    const cardinalsGroup = new THREE.Group();
+    cardinalsGroup.name = "cardinals-group";
+
+    const cardinalDefs = [
+      { label: "N", az: 0, color: 0xef4444 },
+      { label: "E", az: 90, color: 0x38bdf8 },
+      { label: "S", az: 180, color: 0x38bdf8 },
+      { label: "W", az: 270, color: 0x38bdf8 },
     ];
 
-    cardinals.forEach((c) => {
-      const pos = altAzToVector3(0.5, c.az, horizonRadius - 10);
-      const markerGeom = new THREE.SphereGeometry(2.5, 8, 8);
-      const markerMat = new THREE.MeshBasicMaterial({
-        color: c.name === "N" ? 0xef4444 : 0x38bdf8,
-      });
-      const markerMesh = new THREE.Mesh(markerGeom, markerMat);
-      markerMesh.position.copy(pos);
-      cardinalGroup.add(markerMesh);
+    cardinalDefs.forEach((c) => {
+      const v = altAzToVector3(0.5, c.az, horizonRadius);
+      const beaconGeom = new THREE.SphereGeometry(3.5, 16, 16);
+      const beaconMat = new THREE.MeshBasicMaterial({ color: c.color });
+      const beaconMesh = new THREE.Mesh(beaconGeom, beaconMat);
+      beaconMesh.position.copy(v);
+      cardinalsGroup.add(beaconMesh);
     });
-    scene.add(cardinalGroup);
+    scene.add(cardinalsGroup);
 
-    // 10. Animation Render Loop
-    const animate = () => {
-      animationFrameRef.current = requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
+    // 10. Selection Reticle Mesh
+    const selRingGeom = new THREE.RingGeometry(8, 11, 32);
+    const selRingMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.9,
+    });
+    const selectionRing = new THREE.Mesh(selRingGeom, selRingMat);
+    selectionRing.name = "selection-reticle";
+    selectionRing.visible = false;
+    scene.add(selectionRing);
+    selectionMarkerRef.current = selectionRing;
 
-    // 11. Resize Observer
+    // 11. Resize Listener
     const handleResize = () => {
       if (!container || !renderer || !camera) return;
       const w = container.clientWidth;
@@ -330,12 +358,35 @@ export function CelestialSkyScene3D({
     };
     window.addEventListener("resize", handleResize);
 
+    // 12. Animation Loop
+    let animId: number;
+    const animate = () => {
+      animId = requestAnimationFrame(animate);
+      controls.update();
+      renderer?.render(scene, camera);
+    };
+    animate();
+
     return () => {
+      cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
-      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      renderer.dispose();
-      if (container.contains(renderer.domElement)) {
-        container.removeChild(renderer.domElement);
+      controls.dispose();
+      scene.traverse((child) => {
+        if (
+          child instanceof THREE.Mesh ||
+          child instanceof THREE.Points ||
+          child instanceof THREE.Line
+        ) {
+          child.geometry?.dispose();
+          if (Array.isArray(child.material)) child.material.forEach((m) => m.dispose());
+          else child.material?.dispose();
+        }
+      });
+      if (renderer) {
+        renderer.dispose();
+        if (renderer.domElement.parentNode) {
+          renderer.domElement.parentNode.removeChild(renderer.domElement);
+        }
       }
     };
   }, [location, date, objects, altAzToVector3]);
@@ -368,11 +419,6 @@ export function CelestialSkyScene3D({
       -((e.clientY - rect.top) / container.clientHeight) * 2 + 1
     );
 
-    const raycaster = new THREE.Raycaster();
-    raycaster.params.Points = { threshold: 12.0 };
-    raycaster.setFromCamera(mouse, camera);
-
-    // Find closest celestial object
     let closestObj: SkyObjectObservation | null = null;
     let minDistance = Infinity;
 
@@ -419,69 +465,50 @@ export function CelestialSkyScene3D({
       {/* Layer Visibility Toggle Bar */}
       <div className="absolute bottom-4 right-4 z-20 flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl bg-celestial-surface/85 border border-celestial-muted/80 backdrop-blur-md">
         <Button
-          variant="ghost"
+          variant={showConstellations ? "cyan" : "outline"}
           size="sm"
           onClick={() => setShowConstellations(!showConstellations)}
-          className={`h-8 px-2.5 text-xs font-mono gap-1.5 ${showConstellations ? "text-celestial-cyan bg-celestial-cyan/10" : "text-celestial-subtle"}`}
+          className="h-7 text-xs font-mono px-2.5"
         >
-          <Sparkles className="w-3.5 h-3.5" />
+          <Sparkles className="w-3 h-3 mr-1" />
           Constellations
         </Button>
         <Button
-          variant="ghost"
+          variant={showAltAzGrid ? "cyan" : "outline"}
           size="sm"
           onClick={() => setShowAltAzGrid(!showAltAzGrid)}
-          className={`h-8 px-2.5 text-xs font-mono gap-1.5 ${showAltAzGrid ? "text-celestial-cyan bg-celestial-cyan/10" : "text-celestial-subtle"}`}
+          className="h-7 text-xs font-mono px-2.5"
         >
-          <Layers className="w-3.5 h-3.5" />
-          Alt/Az Grid
+          <Layers className="w-3 h-3 mr-1" />
+          Grid
         </Button>
         <Button
-          variant="ghost"
+          variant={showGroundHorizon ? "cyan" : "outline"}
           size="sm"
           onClick={() => setShowGroundHorizon(!showGroundHorizon)}
-          className={`h-8 px-2.5 text-xs font-mono gap-1.5 ${showGroundHorizon ? "text-emerald-400 bg-emerald-500/10" : "text-celestial-subtle"}`}
+          className="h-7 text-xs font-mono px-2.5"
         >
-          <Navigation className="w-3.5 h-3.5" />
+          <Navigation className="w-3 h-3 mr-1" />
           Horizon
         </Button>
         <Button
-          variant="ghost"
+          variant={showCardinals ? "cyan" : "outline"}
           size="sm"
           onClick={() => setShowCardinals(!showCardinals)}
-          className={`h-8 px-2.5 text-xs font-mono gap-1.5 ${showCardinals ? "text-amber-400 bg-amber-500/10" : "text-celestial-subtle"}`}
+          className="h-7 text-xs font-mono px-2.5"
         >
-          <Compass className="w-3.5 h-3.5" />
+          <Compass className="w-3 h-3 mr-1" />
           Cardinals
         </Button>
       </div>
 
-      {/* Selected Object Quick Banner */}
+      {/* Hover Object Information Badge */}
       {hoveredObject && (
-        <div className="absolute bottom-4 left-4 z-20 p-3 rounded-xl bg-celestial-surface/90 border border-celestial-cyan/40 backdrop-blur-md font-mono text-xs space-y-1 shadow-xl">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-celestial-cyan text-sm">
-              {hoveredObject.canonicalName}
-            </span>
-            <Badge variant="outline" className="text-[10px] uppercase py-0 border-celestial-muted">
-              {hoveredObject.type}
-            </Badge>
-          </div>
+        <div className="absolute bottom-4 left-4 z-20 p-2.5 rounded-xl bg-celestial-surface/90 border border-celestial-muted/80 backdrop-blur-md text-xs font-mono text-celestial-starlight space-y-0.5">
+          <div className="font-bold text-celestial-cyan">{hoveredObject.canonicalName}</div>
           <div className="text-celestial-subtle text-[11px]">
-            Alt:{" "}
-            <span className="text-celestial-starlight">
-              {hoveredObject.horizontal.apparentAltitudeDeg}°
-            </span>{" "}
-            · Az:{" "}
-            <span className="text-celestial-starlight">{hoveredObject.horizontal.azimuthDeg}°</span>{" "}
-            · Mag:{" "}
-            <span className="text-celestial-starlight">
-              {hoveredObject.apparentMagnitudeV ?? "N/A"}
-            </span>
-          </div>
-          <div className="text-celestial-subtle text-[10px]">
-            Constellation:{" "}
-            <span className="text-celestial-cyan">{hoveredObject.constellation}</span>
+            Alt: {hoveredObject.horizontal.apparentAltitudeDeg}° · Az:{" "}
+            {hoveredObject.horizontal.azimuthDeg}°
           </div>
         </div>
       )}

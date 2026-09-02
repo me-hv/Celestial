@@ -37,7 +37,12 @@ export interface SearchResultItem {
     | "DEEP_SKY"
     | "CONSTELLATION"
     | "SKY_OBJECT"
-    | "MISSION";
+    | "MISSION"
+    | "SPACECRAFT"
+    | "INSTRUMENT"
+    | "DISCOVERY"
+    | "OBSERVATORY"
+    | "ORGANIZATION";
   category:
     | CelestialCategory
     | "GALACTIC_STRUCTURE"
@@ -45,7 +50,10 @@ export interface SearchResultItem {
     | "COSMIC_STRUCTURE"
     | "COSMIC_EPOCH"
     | "OBSERVABLE_UNIVERSE"
-    | "CONSTELLATION";
+    | "CONSTELLATION"
+    | "MISSION"
+    | "OBSERVATORY"
+    | "ORGANIZATION";
   classificationCode:
     | CelestialClassificationCode
     | "GALACTIC_STRUCTURE"
@@ -54,11 +62,18 @@ export interface SearchResultItem {
     | "OBSERVABLE_LANDMARK"
     | "COSMIC_HORIZON"
     | "CMB"
-    | "CONSTELLATION";
+    | "CONSTELLATION"
+    | "MISSION"
+    | "SPACECRAFT"
+    | "INSTRUMENT"
+    | "DISCOVERY"
+    | "OBSERVATORY"
+    | "ORGANIZATION";
   matchedAlias?: string;
   matchScore: number; // 0.0 to 1.0 (relevance ranking)
   summary?: string;
   hostSystemId?: string;
+  missionSlug?: string;
   thumbnailUrl?: string;
 }
 

@@ -137,20 +137,37 @@ export function calculatePlanetaryEphemeris(
   const earthElements = PLANETARY_ORBIT_ELEMENTS["earth"];
   const earthPos = calculateHeliocentricPosition(earthElements, jd);
 
-  // Special Case: Sun
+  // Special Case: Sun (Standard Meeus Solar Coordinates Ch. 25)
   if (bodySlug === "sun") {
-    // Geocentric position of the Sun is the opposite of the Heliocentric position of Earth
-    const sunGeoX = -earthPos.xAu;
-    const sunGeoY = -earthPos.yAu;
-    const sunGeoZ = -earthPos.zAu;
-    const distAu = Math.sqrt(sunGeoX * sunGeoX + sunGeoY * sunGeoY + sunGeoZ * sunGeoZ);
+    const d = jd - 2451545.0;
+    const T = d / 36525.0;
 
-    const eclipticLonRad = Math.atan2(sunGeoY, sunGeoX);
-    let eclipticLonDeg = (eclipticLonRad * 180.0) / Math.PI;
-    eclipticLonDeg = ((eclipticLonDeg % 360.0) + 360.0) % 360.0;
-    const eclipticLatDeg = 0.0;
+    // Geometric mean longitude of the Sun
+    let L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T * T;
+    L0 = ((L0 % 360.0) + 360.0) % 360.0;
 
-    const { raDeg, decDeg } = eclipticToEquatorial(eclipticLonDeg, eclipticLatDeg);
+    // Mean anomaly of the Sun
+    let M = 357.52911 + 35999.05029 * T - 0.0001537 * T * T;
+    M = ((M % 360.0) + 360.0) % 360.0;
+    const MRad = (M * Math.PI) / 180.0;
+
+    // Sun equation of the center C
+    const C =
+      (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(MRad) +
+      (0.019993 - 0.000101 * T) * Math.sin(2 * MRad) +
+      0.000289 * Math.sin(3 * MRad);
+
+    // True geometric ecliptic longitude
+    let sunLonDeg = L0 + C;
+    sunLonDeg = ((sunLonDeg % 360.0) + 360.0) % 360.0;
+
+    // Sun distance in AU
+    const e = 0.016708634 - 0.000042037 * T;
+    const v = M + C;
+    const vRad = (v * Math.PI) / 180.0;
+    const distAu = (1.000001018 * (1 - e * e)) / (1 + e * Math.cos(vRad));
+
+    const { raDeg, decDeg } = eclipticToEquatorial(sunLonDeg, 0.0);
     const angularDiameterArcsec = (2.0 * PLANETARY_RADII_KM["sun"] * 206265.0) / (distAu * AU_KM);
 
     return {

@@ -63,3 +63,13 @@ The Solar System dataset indexes historical and international catalog aliases:
 - **Jupiter**: `Jove`, `Zeus`, `King of Planets`, `Sol V`
 - **Saturn**: `Ringed Planet`, `Cronus`, `Sol VI`
 - **Venus**: `Morning Star`, `Evening Star`, `Phosphorus`, `Hesperus`
+
+---
+
+## 5. Planetary Ring Systems & 3D Visualization
+
+Planetary ring rendering is data-driven and strictly governed by `PhysicalProperties.hasRingSystem` and `PhysicalProperties.ringSystem`:
+
+- **Saturn**: `hasRingSystem: true`, with physical inner/outer radii ($67,000\text{ km}$ to $140,000\text{ km}$), $26.73^\circ$ axial inclination, water-ice photometric material (`#E2D4A8`), and transparency.
+- **Other Solar System Planets**: `hasRingSystem: false`. Prominent visual rings are omitted. (Note: While Uranus, Jupiter, and Neptune have faint, diffuse dust/ice rings scientifically, prominent visual geometry is reserved for Saturn per the current CELESTIAL specification).
+- **Selection Reticle**: Interactive selection uses thin targeting wireframe line loops (`THREE.LineLoop`) rather than planar `RingGeometry` to prevent visual confusion with planetary rings.

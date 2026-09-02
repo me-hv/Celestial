@@ -340,3 +340,71 @@ export function calculateRiseTransitSet(
     status: "NORMAL",
   };
 }
+
+/**
+ * Calculates atmospheric airmass via Young & Irvine / Kasten & Young formula.
+ * X(z) = 1 / (cos(z) + 0.50572 * (96.07995 - z)^(-1.6364))
+ */
+export function calculateAirmass(altitudeDeg: number): number {
+  if (altitudeDeg <= 0) return 40.0;
+  if (altitudeDeg >= 89.9) return 1.0;
+  const z = 90.0 - altitudeDeg;
+  const zRad = z * DEG_TO_RAD;
+  const airmass = 1.0 / (Math.cos(zRad) + 0.50572 * Math.pow(96.07995 - z, -1.6364));
+  return Math.max(1.0, Math.min(40.0, Number(airmass.toFixed(3))));
+}
+
+/**
+ * Calculates great-circle angular separation between two celestial coordinate pairs in degrees.
+ */
+export function calculateAngularSeparation(
+  ra1Deg: number,
+  dec1Deg: number,
+  ra2Deg: number,
+  dec2Deg: number
+): number {
+  const ra1Rad = ra1Deg * DEG_TO_RAD;
+  const dec1Rad = dec1Deg * DEG_TO_RAD;
+  const ra2Rad = ra2Deg * DEG_TO_RAD;
+  const dec2Rad = dec2Deg * DEG_TO_RAD;
+
+  const dRa = ra1Rad - ra2Rad;
+  const sinDec1 = Math.sin(dec1Rad);
+  const cosDec1 = Math.cos(dec1Rad);
+  const sinDec2 = Math.sin(dec2Rad);
+  const cosDec2 = Math.cos(dec2Rad);
+
+  const cosD = sinDec1 * sinDec2 + cosDec1 * cosDec2 * Math.cos(dRa);
+  const dRad = Math.acos(Math.max(-1.0, Math.min(1.0, cosD)));
+  return Number((dRad * RAD_TO_DEG).toFixed(4));
+}
+
+/**
+ * Calculates approximate Sun geocentric equatorial coordinates for a given date.
+ */
+export function calculateSunPosition(date: Date = new Date()): { raDeg: number; decDeg: number } {
+  const jd = dateToJulianDate(date);
+  const n = jd - 2451545.0;
+  const L = (280.46 + 0.9856474 * n) % 360.0;
+  const g = ((357.528 + 0.9856003 * n) % 360.0) * DEG_TO_RAD;
+  const lambda = (L + 1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * DEG_TO_RAD;
+  const eps = (23.439 - 0.0000004 * n) * DEG_TO_RAD;
+
+  const sinLambda = Math.sin(lambda);
+  const cosLambda = Math.cos(lambda);
+  const sinEps = Math.sin(eps);
+  const cosEps = Math.cos(eps);
+
+  const sinDec = sinEps * sinLambda;
+  const decRad = Math.asin(Math.max(-1.0, Math.min(1.0, sinDec)));
+
+  const y = cosEps * sinLambda;
+  const x = cosLambda;
+  let raRad = Math.atan2(y, x);
+  if (raRad < 0) raRad += 2 * Math.PI;
+
+  return {
+    raDeg: Number((raRad * RAD_TO_DEG).toFixed(5)),
+    decDeg: Number((decRad * RAD_TO_DEG).toFixed(5)),
+  };
+}

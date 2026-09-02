@@ -1,5 +1,6 @@
 import { CelestialObject } from "@/domain/celestial-object/types";
 import { GaiaStarNormalizer, RawGaiaStarRecord, StarValidator } from "./star-normalizer";
+import { generateDeterministicStarId } from "@/lib/data/stellar-catalog-data";
 
 export class StarIngestionPipeline {
   private readonly normalizer = new GaiaStarNormalizer();
@@ -8,17 +9,14 @@ export class StarIngestionPipeline {
   /**
    * Deterministic UUID generation for star records based on Gaia source ID.
    */
-  public generateDeterministicId(sourceId: string): string {
-    const clean = sourceId
-      .replace(/[^0-9]/g, "")
-      .padEnd(12, "0")
-      .slice(0, 12);
-    return `c0000000-0000-4000-8000-${clean}`;
+  public generateDeterministicId(sourceId: string, slug?: string): string {
+    return generateDeterministicStarId(sourceId, slug);
   }
 
   public processRecord(raw: RawGaiaStarRecord): CelestialObject {
     const partial = this.normalizer.normalize(raw);
-    const id = this.generateDeterministicId(raw.source_id);
+    const slug = partial.slug || `star-${raw.source_id}`;
+    const id = this.generateDeterministicId(raw.source_id, slug);
 
     const fullEntity: CelestialObject = {
       id,

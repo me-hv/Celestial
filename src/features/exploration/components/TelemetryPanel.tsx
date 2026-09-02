@@ -11,8 +11,11 @@ import {
   Orbit,
   ArrowRight,
   Sparkles,
+  Telescope,
+  Rocket,
 } from "lucide-react";
 import { CelestialObject } from "@/domain/celestial-object/types";
+import { missionRepo } from "@/lib/data/mission-repository";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatScientificMass, formatTemperature, formatDistance } from "@/lib/utils/formatters";
@@ -39,10 +42,10 @@ export function TelemetryPanel({ object, onClose, onFocusCamera }: TelemetryPane
   return (
     <aside
       aria-label="Celestial Telemetry Details"
-      className="absolute top-20 right-4 z-30 w-full max-w-sm rounded-2xl border border-celestial-muted bg-celestial-surface/90 backdrop-blur-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-200"
+      className="absolute top-20 right-4 z-30 w-full max-w-xs sm:max-w-sm max-h-[calc(100vh-17rem)] flex flex-col rounded-2xl border border-celestial-muted bg-celestial-surface/90 backdrop-blur-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-200"
     >
       {/* Header */}
-      <div className="flex items-start justify-between p-4 border-b border-celestial-muted/80 bg-celestial-deep/60">
+      <div className="flex items-start justify-between p-4 border-b border-celestial-muted/80 bg-celestial-deep/60 shrink-0">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold font-mono text-celestial-starlight tracking-tight">
@@ -64,7 +67,7 @@ export function TelemetryPanel({ object, onClose, onFocusCamera }: TelemetryPane
       </div>
 
       {/* Content Body */}
-      <div className="p-4 space-y-4 max-h-[calc(100vh-14rem)] overflow-y-auto font-sans text-xs scrollbar-thin">
+      <div className="p-4 space-y-4 overflow-y-auto font-sans text-xs scrollbar-thin">
         {/* Summary */}
         {object.summary && (
           <p className="text-celestial-subtle leading-relaxed border-b border-celestial-muted/50 pb-3">
@@ -223,6 +226,33 @@ export function TelemetryPanel({ object, onClose, onFocusCamera }: TelemetryPane
           </div>
         )}
 
+        {/* Exploring Space Missions */}
+        {(() => {
+          const targetMissions = missionRepo.getMissionsForTarget(object.id);
+          if (targetMissions.length === 0) return null;
+
+          return (
+            <div className="p-2.5 rounded-lg border border-celestial-cyan/30 bg-celestial-deep/70 space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-mono text-celestial-cyan font-bold">
+                <Rocket className="w-3.5 h-3.5" />
+                <span>Exploring Missions ({targetMissions.length})</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                {targetMissions.map((m) => (
+                  <Link
+                    key={m.id}
+                    href={`/missions/${m.slug}`}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-celestial-surface/80 hover:bg-celestial-cyan/20 border border-celestial-muted/60 text-[10px] font-mono text-celestial-starlight hover:text-celestial-cyan transition"
+                  >
+                    <span>{m.name}</span>
+                    <ArrowRight className="w-2.5 h-2.5 opacity-60" />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Provenance Citation */}
         <div className="p-2.5 rounded-lg border border-celestial-muted/50 bg-celestial-deep/70 space-y-1">
           <div className="flex items-center justify-between text-[11px]">
@@ -252,21 +282,33 @@ export function TelemetryPanel({ object, onClose, onFocusCamera }: TelemetryPane
       </div>
 
       {/* Footer Quick Actions */}
-      <div className="p-3 border-t border-celestial-muted/80 bg-celestial-deep/80 flex items-center justify-between gap-2">
+      <div className="p-3 border-t border-celestial-muted/80 bg-celestial-deep/80 flex items-center justify-between gap-2 flex-wrap">
         {onFocusCamera && (
           <Button
             variant="cyan"
             size="sm"
             onClick={() => onFocusCamera(object)}
             className="flex-1 gap-1.5 font-mono text-xs"
+            aria-label="Focus Camera"
           >
             <Crosshair className="w-3.5 h-3.5" />
             <span>Focus Camera</span>
           </Button>
         )}
+        <Link href={`/sky?target=${object.slug}`} className="flex-1">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full gap-1.5 font-mono text-xs border-celestial-cyan/40 text-celestial-starlight hover:text-celestial-cyan"
+            title="Observe this object in tonight's sky"
+          >
+            <Telescope className="w-3.5 h-3.5 text-celestial-cyan" />
+            <span>Observe</span>
+          </Button>
+        </Link>
         <Link href={`/objects/${object.slug}`} className="flex-1">
           <Button variant="secondary" size="sm" className="w-full gap-1.5 font-mono text-xs">
-            <span>Full Profile</span>
+            <span>Profile</span>
             <ArrowRight className="w-3 h-3" />
           </Button>
         </Link>

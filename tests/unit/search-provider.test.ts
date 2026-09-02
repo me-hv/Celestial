@@ -85,7 +85,22 @@ describe("InMemorySearchProvider", () => {
   let provider: InMemorySearchProvider;
 
   beforeEach(() => {
-    provider = new InMemorySearchProvider(mockObjects);
+    provider = new InMemorySearchProvider(
+      mockObjects,
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    );
   });
 
   it("finds exact canonical name matches with maximum score", async () => {

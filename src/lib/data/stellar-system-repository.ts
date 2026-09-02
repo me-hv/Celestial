@@ -6,7 +6,7 @@ import { HabitableZoneCalculator } from "../astronomy/habitable-zone";
 
 // Canonical Solar System Model as a First-Class StellarSystem
 export const SOLAR_SYSTEM_ENTITY: StellarSystem = {
-  id: "f0000000-0000-4000-8000-000000000001",
+  id: SOLAR_SYSTEM_IDS.SOLAR_SYSTEM,
   slug: "solar-system",
   name: "Solar System",
   architecture: "SINGLE_STAR",
@@ -51,6 +51,8 @@ export class StellarSystemRepository {
       this.systemsMap.set(sys.id, sys);
       this.systemsMap.set(sys.slug, sys);
     }
+    // Backward compatibility fallback alias
+    this.systemsMap.set("f0000000-0000-4000-8000-000000000001", SOLAR_SYSTEM_ENTITY);
 
     // 2. Index All Celestial Objects (Solar System + Exoplanets)
     const allObjects = [...SOLAR_SYSTEM_OBJECTS, ...EXOPLANET_CELESTIAL_OBJECTS];
