@@ -81,6 +81,10 @@ export class MissionRepository {
   // ==========================================
   // MISSIONS
   // ==========================================
+  public getActiveMissions(): SpaceMission[] {
+    return this.getAll().filter((m) => m.status === "ACTIVE" || m.status === "EXTENDED");
+  }
+
   public getAll(): SpaceMission[] {
     const uniqueMap = new Map<string, SpaceMission>();
     this.missions.forEach((m) => uniqueMap.set(m.id, m));

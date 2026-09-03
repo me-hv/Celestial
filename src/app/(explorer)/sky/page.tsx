@@ -11,6 +11,7 @@ import {
   CelestialClassificationCode,
 } from "@/domain/celestial-object/classification";
 import { skyObjectRepo } from "@/lib/data/sky-object-repository";
+import { SkyIntelligenceEngine } from "@/domain/sky-intelligence/sky-intelligence-engine";
 import { CelestialSkyScene3D } from "@/features/visualization/sky/CelestialSkyScene3D";
 import { AllSkyPlanisphere2D } from "@/features/visualization/sky/AllSkyPlanisphere2D";
 import { CelestialSkyView2D } from "@/features/visualization/sky/CelestialSkyView2D";
@@ -96,6 +97,12 @@ function SkyExplorerContent() {
       setSelectedSlug(targetParam);
     }
   }, [targetParam]);
+
+  // 2.5 Real-time Sky Intelligence
+  const skySummary = useMemo(
+    () => SkyIntelligenceEngine.getCurrentSkySummary(location, date),
+    [location, date]
+  );
 
   // 3. Time Progression Animation
   useEffect(() => {
@@ -190,6 +197,61 @@ function SkyExplorerContent() {
           viewMode={viewMode}
           onViewModeChange={setViewMode}
         />
+
+        {/* Real-Time Sky Intelligence Banner */}
+        <div className="p-4 rounded-2xl border border-celestial-muted/80 bg-celestial-surface/60 backdrop-blur-md space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-bold text-celestial-cyan uppercase flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> What's Happening In Your Sky Right Now
+              </span>
+              <Badge
+                variant="outline"
+                className="text-[10px] font-mono text-emerald-400 border-emerald-500/40"
+              >
+                {skySummary.twilightPhase.replace(/_/g, " ")}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-3 text-xs font-mono text-celestial-subtle">
+              <span>
+                Darkness Index:{" "}
+                <strong className="text-celestial-starlight">
+                  {skySummary.skyDarknessScore}/100
+                </strong>
+              </span>
+              <span>•</span>
+              <span>
+                Moon:{" "}
+                <strong className="text-celestial-starlight">
+                  {(skySummary.moonIlluminationFraction * 100).toFixed(0)}%
+                </strong>
+              </span>
+            </div>
+          </div>
+
+          {/* Top Recommended Observable Targets */}
+          {skySummary.topTargetsRightNow.length > 0 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 border-t border-celestial-muted/40">
+              <span className="text-[10px] font-mono uppercase text-celestial-subtle whitespace-nowrap">
+                Top Targets:
+              </span>
+              {skySummary.topTargetsRightNow.slice(0, 5).map((rec) => (
+                <button
+                  key={rec.targetSlug}
+                  onClick={() => handleSelectObject(rec.targetSlug)}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-mono border whitespace-nowrap transition flex items-center gap-1.5 ${
+                    selectedSlug === rec.targetSlug
+                      ? "bg-celestial-cyan/20 border-celestial-cyan text-celestial-cyan font-bold"
+                      : "bg-celestial-void/60 border-celestial-muted/60 text-celestial-starlight hover:border-celestial-cyan/50"
+                  }`}
+                >
+                  <span>{rec.name}</span>
+                  <span className="text-[10px] text-celestial-subtle">({rec.altitudeDeg}°)</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Search & Quick Filter Bar */}
         <div className="relative">

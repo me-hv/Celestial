@@ -2,14 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
-import {
-  Database,
-  Search,
-  ArrowRight,
-  Filter,
-  ShieldCheck,
-  Radio,
-} from "lucide-react";
+import { Database, Search, ArrowRight, Filter, ShieldCheck, Radio } from "lucide-react";
 import { datasetRepo } from "@/lib/data/dataset-repository";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,8 +17,10 @@ export default function DatasetsHubPage() {
   const filtered = useMemo(() => {
     return datasetRepo.filter({
       search: searchQuery,
-      discipline: selectedDiscipline !== "ALL" ? (selectedDiscipline as ScientificDiscipline) : undefined,
-      wavelengthBand: selectedWavelength !== "ALL" ? (selectedWavelength as WavelengthBand) : undefined,
+      discipline:
+        selectedDiscipline !== "ALL" ? (selectedDiscipline as ScientificDiscipline) : undefined,
+      wavelengthBand:
+        selectedWavelength !== "ALL" ? (selectedWavelength as WavelengthBand) : undefined,
     });
   }, [searchQuery, selectedDiscipline, selectedWavelength]);
 
@@ -44,7 +39,8 @@ export default function DatasetsHubPage() {
             Scientific Datasets & Primary Archives
           </h1>
           <p className="text-xs sm:text-sm text-celestial-subtle">
-            Access authenticated, PDS4-compliant datasets, spectra, and catalogs from ISRO, NASA, ESA, JAXA, CNSA, ESO, and NOAA with full pipeline transformation provenance.
+            Access authenticated, PDS4-compliant datasets, spectra, and catalogs from ISRO, NASA,
+            ESA, JAXA, CNSA, ESO, and NOAA with full pipeline transformation provenance.
           </p>
         </div>
       </div>
@@ -73,7 +69,14 @@ export default function DatasetsHubPage() {
           <div className="flex items-center gap-1 text-[11px] font-mono text-celestial-subtle uppercase mr-2">
             <Filter className="w-3 h-3 text-celestial-cyan" /> Discipline:
           </div>
-          {["ALL", "PLANETARY_SCIENCE", "ASTROPHYSICS", "COSMOLOGY", "SOLAR_PHYSICS", "ASTROMETRY"].map((d) => (
+          {[
+            "ALL",
+            "PLANETARY_SCIENCE",
+            "ASTROPHYSICS",
+            "COSMOLOGY",
+            "SOLAR_PHYSICS",
+            "ASTROMETRY",
+          ].map((d) => (
             <Button
               key={d}
               size="sm"

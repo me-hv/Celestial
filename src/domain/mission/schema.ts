@@ -173,6 +173,24 @@ export const SpacecraftStateSchema = z.object({
   notes: z.string().optional(),
 });
 
+export const TelemetryFreshnessStateSchema = z.enum([
+  "LIVE",
+  "RECENT",
+  "STALE",
+  "HISTORICAL",
+  "RECONSTRUCTED",
+  "MODEL_DERIVED",
+  "UNAVAILABLE",
+]);
+
+export const SpacecraftCommunicationStateSchema = z.enum([
+  "LOCKED",
+  "SEARCHING",
+  "OCCULTED",
+  "OFFLINE",
+  "STANDBY",
+]);
+
 export const MissionTelemetrySchema = z.object({
   currentStatus: z.enum([
     "ACTIVE_CRUISE",
@@ -184,17 +202,30 @@ export const MissionTelemetrySchema = z.object({
     "MISSION_COMPLETE",
     "STANDBY",
   ]),
+  telemetryState: TelemetryFreshnessStateSchema.optional(),
   distanceFromEarthKm: z.number().optional(),
   distanceFromSunAu: z.number().optional(),
   velocityKmS: z.number().optional(),
+  earthRelativeVelocityKmS: z.number().optional(),
   lightTimeMinutes: z.number().optional(),
   missionPhase: z.string(),
+  currentTrajectoryState: z.string().optional(),
+  communicationState: SpacecraftCommunicationStateSchema.optional(),
+  lastKnownPosition: z
+    .object({
+      raDeg: z.number().optional(),
+      decDeg: z.number().optional(),
+      constellation: z.string().optional(),
+    })
+    .optional(),
   telemetryEpistemicStatus: EpistemicStatusSchema,
   lastTelemetryTimestamp: z.string(),
   sourceStation: z.string().optional(),
+  source: z.string().optional(),
   payloadHealth: z.enum(["OPTIMAL", "NOMINAL", "DEGRADED", "STANDBY", "OFFLINE"]).optional(),
   activeInstrumentIds: z.array(z.string()).optional(),
   subsystemSummary: z.string().optional(),
+  provenance: ProvenanceRecordSchema.optional(),
 });
 
 export const SpacecraftSchema = z.object({

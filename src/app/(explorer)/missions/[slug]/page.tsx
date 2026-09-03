@@ -17,6 +17,8 @@ import {
   Globe,
 } from "lucide-react";
 import { missionRepo } from "@/lib/data/mission-repository";
+import { missionTelemetryService } from "@/domain/mission/mission-telemetry-service";
+import { TargetTimelineSection } from "@/features/timeline/components/TargetTimelineSection";
 import { datasetRepo } from "@/lib/data/dataset-repository";
 import { MissionTrajectoryScene } from "@/features/visualization/mission/MissionTrajectoryScene";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +37,9 @@ export async function generateStaticParams() {
 export default async function MissionProfilePage({ params }: MissionProfilePageProps) {
   const { slug } = await params;
   const mission = missionRepo.getBySlug(slug);
+  const telemetry = mission
+    ? missionTelemetryService.getTelemetryForMission(mission.slug) || mission.telemetry
+    : undefined;
 
   if (!mission) {
     notFound();
@@ -155,7 +160,7 @@ export default async function MissionProfilePage({ params }: MissionProfilePageP
       </div>
 
       {/* Live Mission Telemetry & Deep Space Status */}
-      {mission.telemetry && (
+      {telemetry && (
         <div className="rounded-2xl border border-celestial-cyan/40 bg-celestial-surface/70 p-6 backdrop-blur-xl shadow-lg space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-celestial-muted/60 pb-3">
             <div className="flex items-center gap-2 text-celestial-cyan">
@@ -165,69 +170,81 @@ export default async function MissionProfilePage({ params }: MissionProfilePageP
               </h2>
             </div>
             <div className="flex items-center gap-2">
+              {telemetry.telemetryState && (
+                <Badge
+                  variant={telemetry.telemetryState === "MODEL_DERIVED" ? "amber" : "cyan"}
+                  className="font-mono text-xs uppercase"
+                >
+                  {telemetry.telemetryState}
+                </Badge>
+              )}
               <Badge variant="cyan" className="font-mono text-xs uppercase">
-                {mission.telemetry.currentStatus.replace(/_/g, " ")}
+                {telemetry.currentStatus.replace(/_/g, " ")}
               </Badge>
               <Badge
                 variant="outline"
                 className="font-mono text-[10px] text-emerald-400 border-emerald-500/40"
               >
-                {mission.telemetry.telemetryEpistemicStatus}
+                {telemetry.telemetryEpistemicStatus}
               </Badge>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {mission.telemetry.distanceFromEarthKm && (
+            {telemetry.distanceFromEarthKm !== undefined && (
               <div className="p-3 rounded-xl bg-celestial-void/60 border border-celestial-muted/60 space-y-1">
                 <span className="text-[10px] font-mono uppercase text-celestial-subtle">
                   Earth Distance
                 </span>
                 <p className="text-base sm:text-lg font-bold font-mono text-celestial-cyan">
-                  {(mission.telemetry.distanceFromEarthKm / 1e6).toFixed(2)}M km
+                  {(telemetry.distanceFromEarthKm / 1e6).toFixed(2)}M km
                 </p>
               </div>
             )}
-            {mission.telemetry.distanceFromSunAu && (
+            {telemetry.distanceFromSunAu !== undefined && (
               <div className="p-3 rounded-xl bg-celestial-void/60 border border-celestial-muted/60 space-y-1">
                 <span className="text-[10px] font-mono uppercase text-celestial-subtle">
                   Sun Distance
                 </span>
                 <p className="text-base sm:text-lg font-bold font-mono text-celestial-amber">
-                  {mission.telemetry.distanceFromSunAu.toFixed(2)} AU
+                  {telemetry.distanceFromSunAu.toFixed(2)} AU
                 </p>
               </div>
             )}
-            {mission.telemetry.velocityKmS && (
+            {telemetry.velocityKmS !== undefined && (
               <div className="p-3 rounded-xl bg-celestial-void/60 border border-celestial-muted/60 space-y-1">
                 <span className="text-[10px] font-mono uppercase text-celestial-subtle">
                   Heliocentric Velocity
                 </span>
                 <p className="text-base sm:text-lg font-bold font-mono text-emerald-400">
-                  {mission.telemetry.velocityKmS.toFixed(1)} km/s
+                  {telemetry.velocityKmS.toFixed(1)} km/s
                 </p>
               </div>
             )}
-            {mission.telemetry.lightTimeMinutes && (
+            {telemetry.lightTimeMinutes !== undefined && (
               <div className="p-3 rounded-xl bg-celestial-void/60 border border-celestial-muted/60 space-y-1">
                 <span className="text-[10px] font-mono uppercase text-celestial-subtle">
                   1-Way Light Time
                 </span>
-                <p className="text-base sm:text-lg font-bold font-mono text-celestial-purple">
-                  {mission.telemetry.lightTimeMinutes.toFixed(1)} mins
+                <p className="text-base sm:text-lg font-bold font-mono text-purple-400">
+                  {telemetry.lightTimeMinutes.toFixed(1)} mins
                 </p>
               </div>
             )}
           </div>
 
           <div className="text-xs font-mono text-celestial-subtle flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-celestial-muted/40">
-            <span>Phase: {mission.telemetry.missionPhase}</span>
-            {mission.telemetry.sourceStation && (
-              <span>Ground Station: {mission.telemetry.sourceStation}</span>
+            <span>Phase: {telemetry.missionPhase}</span>
+            {telemetry.sourceStation && <span>Ground Station: {telemetry.sourceStation}</span>}
+            {telemetry.currentTrajectoryState && (
+              <span>Trajectory: {telemetry.currentTrajectoryState}</span>
             )}
           </div>
         </div>
       )}
+
+      {/* Historical State & Timeline Milestones */}
+      <TargetTimelineSection targetId={mission.slug} targetName={mission.name} />
 
       {/* Authenticated Scientific Datasets */}
       {datasets && datasets.length > 0 && (

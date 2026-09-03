@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Zap,
   Compass,
   Telescope,
   Star,
@@ -46,6 +47,27 @@ export const SIDEBAR_NAV_SECTIONS: NavSection[] = [
   {
     title: "EXPLORE",
     items: [
+      {
+        href: "/live",
+        label: "Live Command",
+        description: "Real-time telemetry and space intelligence",
+        icon: Radio,
+        exact: true,
+      },
+      {
+        href: "/timeline",
+        label: "Timeline",
+        description: "Universal scientific chronology & history",
+        icon: Clock,
+        exact: true,
+      },
+      {
+        href: "/space-weather",
+        label: "Space Weather",
+        description: "NOAA SWPC solar & geomagnetic feeds",
+        icon: Zap,
+        exact: true,
+      },
       {
         href: "/explore",
         label: "Solar System",

@@ -160,6 +160,12 @@ export interface SpacecraftState {
   notes?: string;
 }
 
+export type TelemetryFreshnessState =
+  "LIVE" | "RECENT" | "STALE" | "HISTORICAL" | "RECONSTRUCTED" | "MODEL_DERIVED" | "UNAVAILABLE";
+
+export type SpacecraftCommunicationState =
+  "LOCKED" | "SEARCHING" | "OCCULTED" | "OFFLINE" | "STANDBY";
+
 export interface MissionTelemetry {
   currentStatus:
     | "ACTIVE_CRUISE"
@@ -170,17 +176,28 @@ export interface MissionTelemetry {
     | "EXTENDED_MISSION"
     | "MISSION_COMPLETE"
     | "STANDBY";
+  telemetryState?: TelemetryFreshnessState;
   distanceFromEarthKm?: number;
   distanceFromSunAu?: number;
   velocityKmS?: number;
+  earthRelativeVelocityKmS?: number;
   lightTimeMinutes?: number;
   missionPhase: string;
+  currentTrajectoryState?: string;
+  communicationState?: SpacecraftCommunicationState;
+  lastKnownPosition?: {
+    raDeg?: number;
+    decDeg?: number;
+    constellation?: string;
+  };
   telemetryEpistemicStatus: EpistemicStatus;
   lastTelemetryTimestamp: string;
   sourceStation?: string;
+  source?: string;
   payloadHealth?: "OPTIMAL" | "NOMINAL" | "DEGRADED" | "STANDBY" | "OFFLINE";
   activeInstrumentIds?: string[];
   subsystemSummary?: string;
+  provenance?: ProvenanceRecord;
 }
 
 export interface Spacecraft {
