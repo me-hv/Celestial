@@ -1,9 +1,14 @@
 import { describe, it, expect } from "vitest";
-import { getEnv, resolveAppUrl, cleanEnvValue } from "@/lib/config/env";
+import {
+  getEnv,
+  resolveAppUrl,
+  cleanEnvValue,
+  cleanUrlValue,
+} from "@/lib/config/env";
 import { getSupabaseClient } from "@/lib/db/supabase";
 import { formatDistance, formatScientificMass, formatTemperature } from "@/lib/utils/formatters";
 
-describe("Environment Configuration & Utilities", () => {
+describe("Environment Configuration & Robust URL Normalization", () => {
   it("Scenario A: provides valid defaults for local development without Supabase", () => {
     const config = getEnv({});
     expect(config.NEXT_PUBLIC_APP_NAME).toBe("CELESTIAL");
@@ -39,10 +44,36 @@ describe("Environment Configuration & Utilities", () => {
     ).toBe("https://custom-domain.org");
   });
 
-  it("Scenario D: sanitizes empty string environment variables to prevent invalid URL failures", () => {
+  it("Scenario D: robustly unwraps quoted strings and handles placeholder literals from Vercel UI pastes", () => {
+    // Unwraps double quotes and single quotes
+    expect(cleanEnvValue('"http://localhost:3000"')).toBe("http://localhost:3000");
+    expect(cleanEnvValue("'https://custom.api'")).toBe("https://custom.api");
+    expect(cleanEnvValue('"YOUR_URL"')).toBeUndefined();
+    expect(cleanEnvValue('"undefined"')).toBeUndefined();
+    expect(cleanEnvValue('"null"')).toBeUndefined();
+
+    // Clean URL normalizer adds protocol if omitted on bare domain
+    expect(cleanUrlValue("celestial.vercel.app")).toBe("https://celestial.vercel.app");
+    expect(cleanUrlValue('"ssd.jpl.nasa.gov/api/horizons.api"')).toBe(
+      "https://ssd.jpl.nasa.gov/api/horizons.api"
+    );
+
+    // Evaluates quoted values on getEnv cleanly without failing URL validation
+    const config = getEnv({
+      NEXT_PUBLIC_APP_URL: '"https://celestial-app.vercel.app"',
+      HORIZONS_API_BASE_URL: '"https://ssd.jpl.nasa.gov/api/horizons.api"',
+      SIMBAD_TAP_URL: '"https://simbad.cds.unistra.fr/simbad/sim-tap"',
+      NASA_API_KEY: '"DEMO_KEY"',
+    });
+    expect(config.NEXT_PUBLIC_APP_URL).toBe("https://celestial-app.vercel.app");
+    expect(config.HORIZONS_API_BASE_URL).toBe("https://ssd.jpl.nasa.gov/api/horizons.api");
+    expect(config.SIMBAD_TAP_URL).toBe("https://simbad.cds.unistra.fr/simbad/sim-tap");
+    expect(config.NASA_API_KEY).toBe("DEMO_KEY");
+  });
+
+  it("Scenario E: sanitizes empty string environment variables to prevent invalid URL failures", () => {
     expect(cleanEnvValue("")).toBeUndefined();
     expect(cleanEnvValue("   ")).toBeUndefined();
-    expect(cleanEnvValue("https://example.com")).toBe("https://example.com");
 
     const config = getEnv({
       NEXT_PUBLIC_APP_URL: "",
@@ -56,31 +87,31 @@ describe("Environment Configuration & Utilities", () => {
     expect(config.NEXT_PUBLIC_SUPABASE_URL).toBeUndefined();
   });
 
-  it("Scenario E: fails with clear configuration error when invalid required URL is provided", () => {
+  it("Scenario F: fails with clear configuration error when invalid required URL is provided", () => {
     expect(() =>
       getEnv({
-        NEXT_PUBLIC_APP_URL: "not-a-valid-url",
+        NEXT_PUBLIC_APP_URL: "http:// invalid url with spaces and illegal characters !!!",
       })
     ).toThrowError(/Invalid environment configuration: NEXT_PUBLIC_APP_URL/);
   });
 
-  it("Scenario F: fails with clear error when invalid Horizons API URL is provided", () => {
+  it("Scenario G: fails with clear error when invalid Horizons API URL is provided", () => {
     expect(() =>
       getEnv({
-        HORIZONS_API_BASE_URL: "invalid://url with spaces",
+        HORIZONS_API_BASE_URL: "http:// invalid url with spaces",
       })
     ).toThrowError(/Invalid environment configuration: HORIZONS_API_BASE_URL/);
   });
 
-  it("Scenario G: fails with clear error when invalid SIMBAD URL is provided", () => {
+  it("Scenario H: fails with clear error when invalid SIMBAD URL is provided", () => {
     expect(() =>
       getEnv({
-        SIMBAD_TAP_URL: "not-a-url",
+        SIMBAD_TAP_URL: "http:// invalid simbad url with spaces",
       })
     ).toThrowError(/Invalid environment configuration: SIMBAD_TAP_URL/);
   });
 
-  it("Scenario H: validates optional Supabase configuration when properly provided", () => {
+  it("Scenario I: validates optional Supabase configuration when properly provided", () => {
     const config = getEnv({
       NEXT_PUBLIC_SUPABASE_URL: "https://my-project.supabase.co",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "my-anon-key-12345",
@@ -91,15 +122,15 @@ describe("Environment Configuration & Utilities", () => {
     expect(config.SUPABASE_SERVICE_ROLE_KEY).toBe("my-service-role-key-67890");
   });
 
-  it("Scenario I: fails when invalid Supabase URL is explicitly provided", () => {
+  it("Scenario J: fails when invalid Supabase URL is explicitly provided", () => {
     expect(() =>
       getEnv({
-        NEXT_PUBLIC_SUPABASE_URL: "invalid-supabase-url",
+        NEXT_PUBLIC_SUPABASE_URL: "http:// invalid supabase url with spaces",
       })
     ).toThrowError(/Invalid environment configuration: NEXT_PUBLIC_SUPABASE_URL/);
   });
 
-  it("Scenario J: getSupabaseClient returns null safely without throwing when unconfigured", () => {
+  it("Scenario K: getSupabaseClient returns null safely without throwing when unconfigured", () => {
     const client = getSupabaseClient();
     expect(client).toBeNull();
   });
