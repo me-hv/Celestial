@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cosmicStructureRepo } from "@/lib/data/cosmic-structure-repository";
@@ -8,7 +8,7 @@ import { CosmicStructureComparisonTable } from "@/features/cosmic-web/components
 import { CosmicLocationBreadcrumb } from "@/features/cosmic-web/components/CosmicLocationBreadcrumb";
 import { Button } from "@/components/ui/button";
 
-export default function CosmicStructureComparePage() {
+function CosmicStructureCompareContent() {
   const searchParams = useSearchParams();
   const allStructures = useMemo(() => cosmicStructureRepo.getAll(), []);
 
@@ -94,5 +94,13 @@ export default function CosmicStructureComparePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CosmicStructureComparePage() {
+  return (
+    <Suspense fallback={<div className="flex-1 min-h-screen bg-slate-950 p-8 font-mono text-xs text-slate-400">Loading Comparison...</div>}>
+      <CosmicStructureCompareContent />
+    </Suspense>
   );
 }

@@ -181,27 +181,27 @@ export default function AstronomicalEventsPage() {
                     <span>{evt.epistemicStatus}</span>
                   </div>
 
-                  <div className="flex items-center gap-1">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 px-2 text-[10px] font-mono text-celestial-purple hover:bg-celestial-purple/10"
-                    >
-                      <Link href={`/research?target=${evt.targetSlugs[0]}`}>
-                        <BookOpen className="w-3 h-3 mr-1" /> Research
-                      </Link>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-[10px] font-mono text-celestial-cyan hover:bg-celestial-cyan/10"
-                    >
-                      <Link
-                        href={`/sky/planner?target=${evt.targetSlugs[0]}&date=${evt.eventDate.slice(0, 10)}`}
+                  <div className="flex items-center gap-1.5">
+                    <Link href={`/research?target=${evt.targetSlugs[0]}`}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 px-2 text-[10px] font-mono text-celestial-purple hover:bg-celestial-purple/10 flex items-center gap-1"
                       >
-                        <Compass className="w-3 h-3 mr-1" /> Plan
-                      </Link>
-                    </Button>
+                        <BookOpen className="w-3 h-3" /> Research
+                      </Button>
+                    </Link>
+                    <Link
+                      href={`/sky/planner?target=${evt.targetSlugs[0]}&date=${evt.eventDate.slice(0, 10)}`}
+                    >
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 px-2 text-[10px] font-mono text-celestial-cyan hover:bg-celestial-cyan/10 flex items-center gap-1"
+                      >
+                        <Compass className="w-3 h-3" /> Plan
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </div>

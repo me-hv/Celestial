@@ -31,10 +31,10 @@ const SPECTRAL_CLASSES = [
 export function StarFilterBar({ filters, onChangeFilters, className = "" }: StarFilterBarProps) {
   return (
     <div
-      className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl border border-celestial-muted/80 bg-celestial-surface/85 backdrop-blur-xl shadow-subtle-card text-xs font-mono ${className}`}
+      className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-2xl border border-white/[0.08] bg-celestial-surface/85 backdrop-blur-xl shadow-xl shadow-black/25 text-xs font-mono ${className}`}
     >
       {/* Distance Presets */}
-      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
+      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0 py-0.5">
         <span className="text-celestial-subtle flex items-center gap-1 shrink-0 mr-1">
           <Compass className="w-3.5 h-3.5 text-celestial-cyan" />
           <span className="hidden sm:inline">Distance:</span>
@@ -45,10 +45,10 @@ export function StarFilterBar({ filters, onChangeFilters, className = "" }: Star
             <button
               key={preset.label}
               onClick={() => onChangeFilters({ ...filters, maxDistancePc: preset.value })}
-              className={`px-2.5 py-1 rounded-lg transition-all whitespace-nowrap border ${
+              className={`px-2.5 py-1.5 rounded-xl transition-all whitespace-nowrap border ${
                 isSelected
-                  ? "bg-celestial-cyan text-celestial-void font-bold border-celestial-cyan shadow-sm"
-                  : "bg-celestial-deep/80 text-celestial-subtle border-celestial-muted/60 hover:text-celestial-starlight hover:border-celestial-muted"
+                  ? "bg-celestial-cyan text-celestial-void font-bold border-celestial-cyan shadow-sm shadow-celestial-cyan/20"
+                  : "bg-white/[0.03] text-celestial-subtle border-white/[0.08] hover:text-celestial-starlight hover:border-white/[0.16]"
               }`}
             >
               {preset.label}
@@ -60,8 +60,8 @@ export function StarFilterBar({ filters, onChangeFilters, className = "" }: Star
       {/* Spectral Class Filter & Planetary Status Toggle */}
       <div className="flex items-center gap-2 shrink-0">
         {/* Spectral Dropdown */}
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-celestial-muted/80 bg-celestial-deep/80">
-          <Sparkles className="w-3.5 h-3.5 text-celestial-amber" />
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/[0.08] bg-white/[0.04]">
+          <Sparkles className="w-3.5 h-3.5 text-celestial-amber shrink-0" />
           <select
             aria-label="Filter by Spectral Class"
             value={filters.spectralClass || "ALL"}
@@ -77,7 +77,7 @@ export function StarFilterBar({ filters, onChangeFilters, className = "" }: Star
               <option
                 key={sp.value}
                 value={sp.value}
-                className="bg-celestial-surface text-celestial-starlight"
+                className="bg-celestial-deep text-celestial-starlight"
               >
                 {sp.label}
               </option>
@@ -93,10 +93,10 @@ export function StarFilterBar({ filters, onChangeFilters, className = "" }: Star
               hasPlanetarySystem: filters.hasPlanetarySystem === undefined ? true : undefined,
             })
           }
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all ${
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all ${
             filters.hasPlanetarySystem
               ? "bg-celestial-cyan/20 text-celestial-cyan border-celestial-cyan font-bold"
-              : "bg-celestial-deep/80 text-celestial-subtle border-celestial-muted/60 hover:text-celestial-starlight hover:border-celestial-muted"
+              : "bg-white/[0.03] text-celestial-subtle border-white/[0.08] hover:text-celestial-starlight hover:border-white/[0.16]"
           }`}
           title="Toggle stars with known confirmed exoplanets"
         >

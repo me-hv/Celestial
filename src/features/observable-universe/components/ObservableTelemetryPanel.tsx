@@ -20,7 +20,7 @@ export const ObservableTelemetryPanel: React.FC<ObservableTelemetryPanelProps> =
 }) => {
   if (!landmark && !shell && !horizon) {
     return (
-      <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 font-mono text-xs">
+      <div className="p-4 rounded-xl bg-celestial-surface/80 border border-white/[0.08] text-celestial-subtle font-mono text-xs backdrop-blur-xl">
         Select a landmark, redshift shell, or cosmic horizon to view physical telemetry.
       </div>
     );
@@ -30,17 +30,17 @@ export const ObservableTelemetryPanel: React.FC<ObservableTelemetryPanelProps> =
   if (landmark) {
     return (
       <div
-        className="flex flex-col gap-3 p-4 rounded-xl bg-slate-900/90 border border-slate-800 backdrop-blur-md font-mono"
+        className="flex flex-col gap-3 p-4 rounded-2xl bg-celestial-surface/90 border border-white/[0.08] backdrop-blur-2xl font-mono shadow-xl"
         data-testid="observable-telemetry-landmark"
       >
-        <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-2.5">
+        <div className="flex items-start justify-between gap-2 border-b border-white/[0.08] pb-2.5">
           <div>
-            <span className="text-[10px] text-cyan-400 font-bold uppercase tracking-wider">
+            <span className="text-[10px] text-celestial-cyan font-bold uppercase tracking-wider">
               {landmark.category} • OBSERVATIONAL LANDMARK
             </span>
-            <h3 className="text-base font-bold text-slate-100">{landmark.name}</h3>
+            <h3 className="text-base font-bold text-celestial-starlight">{landmark.name}</h3>
             {landmark.standardDesignation && (
-              <span className="text-xs text-slate-400">{landmark.standardDesignation}</span>
+              <span className="text-xs text-celestial-subtle">{landmark.standardDesignation}</span>
             )}
           </div>
           <span
@@ -58,7 +58,7 @@ export const ObservableTelemetryPanel: React.FC<ObservableTelemetryPanelProps> =
 
         {/* Telemetry Matrix */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-          <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800/60">
+          <div className="p-2 rounded-lg bg-celestial-deep/60 border border-white/[0.06]">
             <span className="text-[10px] text-slate-500 block">Redshift (z)</span>
             <span className="text-slate-100 font-bold text-sm">
               {landmark.redshiftZ.toFixed(3)}

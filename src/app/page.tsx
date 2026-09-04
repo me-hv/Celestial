@@ -94,6 +94,28 @@ const COSMIC_SCALES = [
 // 2. Exploration Realm Cards
 const EXPLORATION_REALMS = [
   {
+    title: "Live Command Center",
+    scale: "Real-Time",
+    domain: "Space Intelligence",
+    description:
+      "Integrated real-time telemetry, space weather conditions, ground sky observer state, active probes, and data feeds.",
+    href: "/live",
+    icon: Radio,
+    accent: "text-celestial-cyan",
+    borderHover: "hover:border-celestial-cyan/50",
+  },
+  {
+    title: "Scientific Timeline",
+    scale: "0 – 13.8 Gyr",
+    domain: "Universal Chronology",
+    description:
+      "Unified temporal intelligence connecting cosmological epochs, space exploration missions, and breakthroughs.",
+    href: "/timeline",
+    icon: Clock,
+    accent: "text-amber-400",
+    borderHover: "hover:border-amber-400/50",
+  },
+  {
     title: "Solar System Explorer",
     scale: "0.1 – 100 AU",
     domain: "Planetary Dynamics",
@@ -247,23 +269,23 @@ export default function HomePage() {
       <AmbientStarfieldCanvas className="z-0 opacity-80" />
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-12 sm:pt-20 pb-12 sm:pb-16 flex flex-col items-center text-center px-4">
+      <section className="relative z-10 pt-10 sm:pt-16 md:pt-20 pb-10 sm:pb-14 flex flex-col items-center text-center px-4">
         <Container size="lg" className="flex flex-col items-center space-y-6 max-w-4xl">
           {/* Scientific Platform Indicator */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-celestial-cyan/30 bg-celestial-surface/70 backdrop-blur-md text-xs font-mono text-celestial-cyan shadow-glow-cyan/20">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-celestial-cyan/35 bg-celestial-surface/75 backdrop-blur-xl text-xs font-mono text-celestial-cyan shadow-glow-cyan/20">
             <Sparkles className="w-3.5 h-3.5" />
             <span className="tracking-wide">SCIENTIFIC ASTRONOMICAL ATLAS · GROUND TO COSMOS</span>
           </div>
 
           {/* Hero Branding */}
           <div className="space-y-3">
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-celestial-starlight uppercase font-mono">
+            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight text-celestial-starlight uppercase font-mono drop-shadow-sm">
               CELESTIAL
             </h1>
             <p className="text-lg sm:text-2xl font-light text-celestial-subtle max-w-2xl mx-auto">
               Interactive Atlas of the Universe
             </p>
-            <p className="text-xs sm:text-sm text-celestial-subtle/80 max-w-xl mx-auto font-mono">
+            <p className="text-xs sm:text-sm text-celestial-subtle/80 max-w-xl mx-auto font-mono leading-relaxed">
               Explore from Earth to the edge of the observable universe across spatial, temporal,
               and cosmological scales.
             </p>
@@ -273,15 +295,16 @@ export default function HomePage() {
           <div className="w-full max-w-xl pt-2">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="w-full h-13 px-4 rounded-xl border border-celestial-muted/80 bg-celestial-surface/80 hover:bg-celestial-surface text-celestial-starlight text-sm flex items-center justify-between shadow-subtle-card backdrop-blur-xl transition group"
+              className="w-full h-12 sm:h-14 px-4 rounded-2xl border border-white/[0.1] hover:border-celestial-cyan/50 bg-celestial-surface/75 hover:bg-celestial-surface text-celestial-starlight text-sm flex items-center justify-between shadow-xl shadow-black/40 backdrop-blur-xl transition-all duration-200 group active:scale-[0.99]"
+              aria-label="Search the Universe"
             >
-              <div className="flex items-center gap-3 text-celestial-subtle group-hover:text-celestial-starlight transition-colors">
-                <Search className="w-4 h-4 text-celestial-cyan" />
-                <span className="text-xs sm:text-sm font-normal">
+              <div className="flex items-center gap-3 text-celestial-subtle group-hover:text-celestial-starlight transition-colors min-w-0">
+                <Search className="w-4 h-4 text-celestial-cyan shrink-0" />
+                <span className="text-xs sm:text-sm font-normal truncate">
                   Search planets, stars, galaxies, epochs, horizons...
                 </span>
               </div>
-              <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 rounded bg-celestial-muted/70 text-[11px] font-mono text-celestial-subtle border border-celestial-muted">
+              <kbd className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-lg bg-white/[0.08] text-[11px] font-mono text-celestial-subtle border border-white/[0.1] shrink-0">
                 ⌘K
               </kbd>
             </button>
@@ -290,7 +313,7 @@ export default function HomePage() {
       </section>
 
       {/* Cosmic Scale Progression ("Journey Through the Universe") */}
-      <section className="relative z-10 py-10 border-y border-celestial-muted/60 bg-celestial-surface/40 backdrop-blur-md">
+      <section className="relative z-10 py-8 sm:py-10 border-y border-white/[0.07] bg-celestial-surface/30 backdrop-blur-xl">
         <Container size="xl" className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 px-1">
             <div>
@@ -307,30 +330,32 @@ export default function HomePage() {
           </div>
 
           {/* Scale Step Hierarchy Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
             {COSMIC_SCALES.map((item) => (
               <Link
                 key={item.step}
                 href={item.href}
-                className="group flex flex-col p-3 rounded-xl border border-celestial-muted/70 bg-celestial-surface/60 hover:bg-celestial-surface hover:border-celestial-cyan/40 transition-all text-left"
+                className="group flex flex-col justify-between p-3.5 rounded-2xl border border-white/[0.07] bg-celestial-surface/60 hover:bg-celestial-surface/90 hover:border-celestial-cyan/40 transition-all duration-200 text-left shadow-lg shadow-black/20 hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-mono font-bold text-celestial-cyan">
-                    {item.step}
-                  </span>
-                  <span className="text-[9px] font-mono text-celestial-subtle/80">
-                    {item.order}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] font-mono font-bold text-celestial-cyan">
+                      {item.step}
+                    </span>
+                    <span className="text-[9px] font-mono text-celestial-subtle/80">
+                      {item.order}
+                    </span>
+                  </div>
+                  <h3 className="text-xs font-bold text-celestial-starlight group-hover:text-celestial-cyan transition-colors truncate">
+                    {item.label}
+                  </h3>
+                  <span className="text-[10px] font-mono text-celestial-subtle truncate block mt-0.5">
+                    {item.scale}
                   </span>
                 </div>
-                <h3 className="text-xs font-bold text-celestial-starlight group-hover:text-celestial-cyan transition-colors truncate">
-                  {item.label}
-                </h3>
-                <span className="text-[10px] font-mono text-celestial-subtle truncate mt-0.5">
-                  {item.scale}
-                </span>
-                <div className="mt-2 flex items-center gap-1 text-[10px] font-mono text-celestial-cyan/80 group-hover:translate-x-0.5 transition-transform">
-                  <span>Enter</span>
-                  <ChevronRight className="w-3 h-3" />
+                <div className="mt-2.5 pt-2 border-t border-white/[0.05] flex items-center justify-between text-[10px] font-mono text-celestial-cyan/80 group-hover:text-celestial-cyan">
+                  <span>Explore</span>
+                  <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </Link>
             ))}
@@ -355,35 +380,35 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {EXPLORATION_REALMS.map((realm) => {
               const Icon = realm.icon;
               return (
                 <Link
                   key={realm.title}
                   href={realm.href}
-                  className={`group flex flex-col justify-between p-5 rounded-2xl border border-celestial-muted/80 bg-celestial-surface/75 backdrop-blur-md transition-all duration-200 hover:bg-celestial-surface hover:-translate-y-0.5 shadow-subtle-card ${realm.borderHover}`}
+                  className={`group flex flex-col justify-between p-5 sm:p-6 rounded-2xl border border-white/[0.08] bg-celestial-surface/65 backdrop-blur-xl transition-all duration-200 hover:bg-celestial-surface/90 hover:-translate-y-1 shadow-xl shadow-black/40 ${realm.borderHover}`}
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-3.5">
                     <div className="flex items-center justify-between">
                       <div
-                        className={`p-2.5 rounded-xl bg-celestial-muted/50 border border-celestial-muted/60 ${realm.accent}`}
+                        className={`p-3 rounded-xl bg-white/[0.05] border border-white/[0.08] ${realm.accent}`}
                       >
                         <Icon className="w-5 h-5" />
                       </div>
                       <Badge
                         variant="outline"
-                        className="font-mono text-[10px] uppercase py-0.5 px-2 bg-celestial-muted/40 text-celestial-subtle border-celestial-muted"
+                        className="font-mono text-[10px] uppercase py-0.5 px-2.5 bg-white/[0.04] text-celestial-subtle border-white/[0.1]"
                       >
                         {realm.scale}
                       </Badge>
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-mono text-celestial-subtle uppercase tracking-wider">
+                      <span className="text-[10px] font-mono text-celestial-subtle/80 uppercase tracking-widest font-semibold">
                         {realm.domain}
                       </span>
-                      <h3 className="text-base font-bold text-celestial-starlight group-hover:text-celestial-cyan transition-colors mt-0.5">
+                      <h3 className="text-base sm:text-lg font-bold text-celestial-starlight group-hover:text-celestial-cyan transition-colors mt-0.5 font-mono">
                         {realm.title}
                       </h3>
                     </div>
@@ -393,8 +418,8 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  <div className="mt-4 pt-3 border-t border-celestial-muted/50 flex items-center justify-between text-xs font-mono text-celestial-cyan">
-                    <span className="font-medium">Launch Atlas</span>
+                  <div className="mt-5 pt-3.5 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-celestial-cyan">
+                    <span className="font-semibold">Launch Atlas</span>
                     <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </Link>
@@ -405,7 +430,7 @@ export default function HomePage() {
       </section>
 
       {/* Featured Astronomical Landmarks */}
-      <section className="relative z-10 py-10 border-t border-celestial-muted/60 bg-celestial-surface/30">
+      <section className="relative z-10 py-10 border-t border-white/[0.07] bg-celestial-surface/20">
         <Container size="xl" className="space-y-5">
           <div className="flex items-center justify-between px-1">
             <div>
@@ -421,22 +446,24 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2 sm:gap-2.5">
             {FEATURED_LANDMARKS.map((landmark) => (
               <Link
                 key={landmark.name}
                 href={landmark.href}
-                className="flex flex-col p-2.5 rounded-xl border border-celestial-muted/60 bg-celestial-surface/70 hover:bg-celestial-surface hover:border-celestial-cyan/40 transition text-left group"
+                className="flex flex-col justify-between p-3 rounded-2xl border border-white/[0.07] bg-celestial-surface/60 hover:bg-celestial-surface/90 hover:border-celestial-cyan/40 transition-all duration-200 text-left group shadow-sm"
               >
-                <span className="text-xs font-bold text-celestial-starlight group-hover:text-celestial-cyan transition-colors truncate">
-                  {landmark.name}
-                </span>
-                <span className="text-[10px] font-mono text-celestial-subtle truncate mt-0.5">
-                  {landmark.scale}
-                </span>
+                <div>
+                  <span className="text-xs font-bold text-celestial-starlight group-hover:text-celestial-cyan transition-colors truncate block">
+                    {landmark.name}
+                  </span>
+                  <span className="text-[10px] font-mono text-celestial-subtle truncate mt-0.5 block">
+                    {landmark.scale}
+                  </span>
+                </div>
                 <Badge
                   variant="outline"
-                  className="mt-2 text-[9px] font-mono uppercase px-1.5 py-0 justify-center"
+                  className="mt-2 text-[9px] font-mono uppercase px-1.5 py-0 justify-center w-full bg-white/[0.03] border-white/[0.08]"
                 >
                   {landmark.type}
                 </Badge>
@@ -447,8 +474,8 @@ export default function HomePage() {
       </section>
 
       {/* Scientific Honesty & Provenance Statement */}
-      <section className="relative z-10 py-8 border-t border-celestial-muted/60 bg-celestial-void/90 text-center">
-        <Container size="md" className="space-y-3">
+      <section className="relative z-10 py-10 border-t border-white/[0.07] bg-celestial-void/90 text-center">
+        <Container size="md" className="space-y-3.5">
           <div className="flex items-center justify-center gap-2 flex-wrap">
             <EpistemicBadge status="OBSERVED" />
             <EpistemicBadge status="INFERRED" />
@@ -468,3 +495,4 @@ export default function HomePage() {
     </div>
   );
 }
+

@@ -27,6 +27,7 @@ import {
   BookOpen,
   Building2,
   Database,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -260,163 +261,184 @@ export function AppSidebar({
     return pathname === item.href || pathname.startsWith(`${item.href}/`);
   };
 
-  const sidebarContent = (
-    <div className="flex flex-col h-full bg-celestial-surface/90 backdrop-blur-xl border-r border-celestial-muted/70 select-none">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-celestial-muted/60 shrink-0">
-        <Link
-          href="/"
-          onClick={onCloseMobile}
-          className="flex items-center gap-3 text-celestial-starlight hover:opacity-90 transition-opacity focus:outline-none min-w-0"
-        >
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-celestial-cyan/15 border border-celestial-cyan/40 text-celestial-cyan shadow-glow-cyan shrink-0">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          {isExpanded && (
-            <div className="min-w-0 flex flex-col">
-              <span className="font-mono text-sm font-bold tracking-widest text-celestial-starlight uppercase truncate">
-                CELESTIAL
-              </span>
-              <span className="text-[10px] font-mono text-celestial-cyan/80 tracking-wider">
-                ASTRONOMICAL ATLAS
-              </span>
-            </div>
-          )}
-        </Link>
+  const renderSidebarContent = (isMobileView = false) => {
+    const showExpanded = isMobileView || isExpanded;
 
-        {/* Toggle Collapse Button (Desktop Only) */}
-        <button
-          onClick={onToggleExpand}
-          className="hidden md:flex p-1.5 rounded-lg text-celestial-subtle hover:text-celestial-cyan hover:bg-celestial-muted/50 transition focus:outline-none"
-          title={isExpanded ? "Collapse Sidebar (Compact)" : "Expand Sidebar"}
-          aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
-        >
-          {isExpanded ? (
-            <PanelLeftClose className="w-4 h-4" />
-          ) : (
-            <PanelLeftOpen className="w-4 h-4" />
-          )}
-        </button>
-      </div>
-
-      {/* Nav List */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-4 font-sans custom-scrollbar">
-        {/* Home Link */}
-        <div className="space-y-1">
+    return (
+      <div className="flex flex-col h-full bg-celestial-deep/95 backdrop-blur-2xl border-r border-white/[0.07] select-none shadow-2xl">
+        {/* Brand Header */}
+        <div className="h-16 flex items-center justify-between px-4 border-b border-white/[0.07] shrink-0 bg-celestial-surface/40">
           <Link
             href="/"
             onClick={onCloseMobile}
-            title={!isExpanded ? "Home" : undefined}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all group relative",
-              pathname === "/"
-                ? "bg-celestial-cyan/15 text-celestial-cyan border border-celestial-cyan/35 shadow-sm"
-                : "text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted/40"
-            )}
+            className="flex items-center gap-3 text-celestial-starlight hover:opacity-90 transition-opacity focus:outline-none min-w-0"
           >
-            <Home className="w-4 h-4 shrink-0" />
-            {isExpanded && (
-              <span className="font-semibold text-celestial-starlight truncate">Home Portal</span>
-            )}
-            {!isExpanded && (
-              <div className="absolute left-full ml-2 px-2.5 py-1 bg-celestial-surface border border-celestial-muted rounded-md text-xs font-medium text-celestial-starlight whitespace-nowrap shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                Home Portal
+            <div className="flex items-center justify-center w-8 h-8 rounded-xl bg-celestial-cyan/15 border border-celestial-cyan/40 text-celestial-cyan shadow-glow-cyan shrink-0">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            {showExpanded && (
+              <div className="min-w-0 flex flex-col">
+                <span className="font-mono text-sm font-bold tracking-widest text-celestial-starlight uppercase truncate">
+                  CELESTIAL
+                </span>
+                <span className="text-[10px] font-mono text-celestial-cyan tracking-wider">
+                  ASTRONOMICAL ATLAS
+                </span>
               </div>
             )}
           </Link>
+
+          {/* Action buttons in header */}
+          {isMobileView ? (
+            <button
+              onClick={onCloseMobile}
+              className="p-2 rounded-xl text-celestial-subtle hover:text-celestial-starlight hover:bg-white/[0.06] transition focus:outline-none"
+              aria-label="Close Navigation Menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          ) : (
+            <button
+              onClick={onToggleExpand}
+              className="hidden md:flex p-1.5 rounded-lg text-celestial-subtle hover:text-celestial-cyan hover:bg-white/[0.06] transition focus:outline-none"
+              title={isExpanded ? "Collapse Sidebar (Compact)" : "Expand Sidebar"}
+              aria-label={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
+            >
+              {isExpanded ? (
+                <PanelLeftClose className="w-4 h-4" />
+              ) : (
+                <PanelLeftOpen className="w-4 h-4" />
+              )}
+            </button>
+          )}
         </div>
 
-        {/* Categorized Navigation Sections */}
-        {SIDEBAR_NAV_SECTIONS.map((section) => (
-          <div key={section.title} className="space-y-1">
-            {isExpanded ? (
-              <div className="px-3 py-1 text-[10px] font-mono font-semibold tracking-wider text-celestial-subtle/70 uppercase">
-                {section.title}
-              </div>
-            ) : (
-              <div className="h-px bg-celestial-muted/40 my-2 mx-1" />
-            )}
-
-            {section.items.map((item) => {
-              const Icon = item.icon;
-              const active = isItemActive(item);
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onCloseMobile}
-                  title={!isExpanded ? item.label : undefined}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-xl text-xs transition-all group relative",
-                    active
-                      ? "bg-celestial-cyan/15 text-celestial-cyan border border-celestial-cyan/35 font-semibold shadow-sm"
-                      : "text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted/40 font-medium"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "w-4 h-4 shrink-0 transition-colors",
-                      active
-                        ? "text-celestial-cyan"
-                        : "text-celestial-subtle group-hover:text-celestial-starlight"
-                    )}
-                  />
-
-                  {isExpanded && (
-                    <div className="min-w-0 flex flex-col">
-                      <span className="text-xs truncate">{item.label}</span>
-                    </div>
-                  )}
-
-                  {/* Tooltip on Collapsed Hover */}
-                  {!isExpanded && (
-                    <div className="absolute left-full ml-2 px-2.5 py-1 bg-celestial-surface border border-celestial-muted rounded-md text-xs font-medium text-celestial-starlight whitespace-nowrap shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
-                      {item.label}
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
+        {/* Navigation List */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 space-y-4 font-sans custom-scrollbar">
+          {/* Home Link */}
+          <div className="space-y-1">
+            <Link
+              href="/"
+              onClick={onCloseMobile}
+              title={!showExpanded ? "Home" : undefined}
+              className={cn(
+                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all group relative min-h-[40px]",
+                pathname === "/"
+                  ? "bg-celestial-cyan/15 text-celestial-cyan border border-celestial-cyan/40 font-semibold shadow-sm shadow-celestial-cyan/10"
+                  : "text-celestial-subtle hover:text-celestial-starlight hover:bg-white/[0.05]"
+              )}
+            >
+              <Home
+                className={cn(
+                  "w-4 h-4 shrink-0 transition-colors",
+                  pathname === "/" ? "text-celestial-cyan" : "text-celestial-subtle group-hover:text-celestial-starlight"
+                )}
+              />
+              {showExpanded && (
+                <span className="font-semibold text-celestial-starlight truncate">Home Portal</span>
+              )}
+              {!showExpanded && (
+                <div className="absolute left-full ml-2 px-2.5 py-1 bg-celestial-surface border border-white/[0.1] rounded-md text-xs font-medium text-celestial-starlight whitespace-nowrap shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                  Home Portal
+                </div>
+              )}
+            </Link>
           </div>
-        ))}
-      </div>
 
-      {/* Sidebar Footer Metadata */}
-      {isExpanded && (
-        <div className="p-3 border-t border-celestial-muted/60 text-[10px] font-mono text-celestial-subtle/80 flex items-center justify-between shrink-0">
-          <span>IAU · NASA · GAIA DR3</span>
-          <span className="text-celestial-cyan">v1.0</span>
+          {/* Categorized Navigation Sections */}
+          {SIDEBAR_NAV_SECTIONS.map((section) => (
+            <div key={section.title} className="space-y-1">
+              {showExpanded ? (
+                <div className="px-3 py-1 text-[10px] font-mono font-bold tracking-widest text-celestial-subtle/70 uppercase">
+                  {section.title}
+                </div>
+              ) : (
+                <div className="h-px bg-white/[0.06] my-2 mx-1" />
+              )}
+
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = isItemActive(item);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onCloseMobile}
+                    title={!showExpanded ? item.label : undefined}
+                    className={cn(
+                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs transition-all group relative min-h-[40px]",
+                      active
+                        ? "bg-celestial-cyan/15 text-celestial-cyan border border-celestial-cyan/35 font-semibold shadow-sm shadow-celestial-cyan/10"
+                        : "text-celestial-subtle hover:text-celestial-starlight hover:bg-white/[0.05] font-medium"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "w-4 h-4 shrink-0 transition-colors",
+                        active
+                          ? "text-celestial-cyan"
+                          : "text-celestial-subtle group-hover:text-celestial-starlight"
+                      )}
+                    />
+
+                    {showExpanded && (
+                      <div className="min-w-0 flex flex-col">
+                        <span className="text-xs truncate">{item.label}</span>
+                      </div>
+                    )}
+
+                    {/* Tooltip on Collapsed Hover */}
+                    {!showExpanded && (
+                      <div className="absolute left-full ml-2 px-2.5 py-1 bg-celestial-surface border border-white/[0.1] rounded-md text-xs font-medium text-celestial-starlight whitespace-nowrap shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity z-50">
+                        {item.label}
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </div>
-      )}
-    </div>
-  );
+
+        {/* Sidebar Footer Metadata */}
+        {showExpanded && (
+          <div className="p-3 border-t border-white/[0.07] bg-celestial-surface/30 text-[10px] font-mono text-celestial-subtle/80 flex items-center justify-between shrink-0">
+            <span>IAU · NASA · GAIA DR3</span>
+            <span className="text-celestial-cyan font-bold">v1.0</span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
       {/* Desktop Persistent Sidebar */}
       <aside
         className={cn(
-          "hidden md:block shrink-0 transition-all duration-300 ease-in-out z-30 sticky top-0 h-screen",
+          "hidden md:block shrink-0 transition-all duration-300 ease-in-out z-30 sticky top-0 h-screen h-[100dvh]",
           isExpanded ? "w-64" : "w-[68px]",
           className
         )}
       >
-        {sidebarContent}
+        {renderSidebarContent(false)}
       </aside>
 
       {/* Mobile Slide-Over Drawer */}
       {isMobileOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex animate-in fade-in duration-200">
           <div
-            className="fixed inset-0 bg-celestial-void/80 backdrop-blur-sm"
+            className="fixed inset-0 bg-celestial-void/80 backdrop-blur-md transition-opacity"
             onClick={onCloseMobile}
+            aria-hidden="true"
           />
-          <div className="relative w-72 max-w-[80vw] h-full z-10 animate-in slide-in-from-left duration-200">
-            {sidebarContent}
+          <div className="relative w-72 max-w-[85vw] h-full z-10 animate-in slide-in-from-left duration-200 shadow-2xl">
+            {renderSidebarContent(true)}
           </div>
         </div>
       )}
     </>
   );
 }
+

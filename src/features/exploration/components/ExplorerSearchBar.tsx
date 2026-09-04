@@ -76,12 +76,12 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search stars, exoplanets (e.g. TRAPPIST-1 e, Proxima b, Mars)..."
-          className="w-full h-10 pl-10 pr-10 rounded-lg border border-celestial-muted bg-celestial-surface/80 text-sm text-celestial-starlight placeholder:text-celestial-subtle/60 backdrop-blur-md focus:outline-none focus:border-celestial-cyan focus:ring-1 focus:ring-celestial-cyan font-sans"
+          className="w-full h-10 pl-10 pr-10 rounded-xl border border-white/[0.1] bg-celestial-surface/85 text-xs sm:text-sm text-celestial-starlight placeholder:text-celestial-subtle/50 backdrop-blur-xl focus:outline-none focus:border-celestial-cyan/80 focus:ring-1 focus:ring-celestial-cyan/50 font-sans shadow-lg shadow-black/20 transition-all"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
-            className="absolute right-3 text-xs font-mono text-celestial-subtle hover:text-celestial-starlight"
+            className="absolute right-3 text-[11px] font-mono text-celestial-subtle hover:text-celestial-starlight"
           >
             CLEAR
           </button>
@@ -90,15 +90,17 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
 
       {/* Search Dropdown */}
       {isOpen && (
-        <div className="absolute top-12 left-0 right-0 rounded-xl border border-celestial-muted bg-celestial-surface/95 backdrop-blur-xl shadow-2xl z-40 overflow-hidden py-1.5 space-y-0.5">
+        <div className="absolute top-12 left-0 right-0 rounded-2xl border border-white/[0.1] bg-celestial-surface/95 backdrop-blur-2xl shadow-2xl z-40 overflow-hidden py-1.5 space-y-0.5">
           {results.map((item) => (
             <button
               key={item.id}
               onClick={() => handleItemClick(item)}
-              className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-celestial-muted/60 transition-colors text-left group"
+              className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-white/[0.05] transition-colors text-left group"
             >
-              <div className="flex items-center gap-2.5">
-                {getIcon(item.objectType)}
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-white/[0.04] text-celestial-cyan">
+                  {getIcon(item.objectType)}
+                </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-semibold text-celestial-starlight">
@@ -117,7 +119,7 @@ export function ExplorerSearchBar({ onSelectObject, className = "" }: ExplorerSe
                   )}
                 </div>
               </div>
-              <Badge variant="outline" className="text-[10px]">
+              <Badge variant="outline" className="text-[10px] bg-white/[0.03] border-white/[0.1]">
                 {item.objectType || item.classificationCode.replace(/_/g, " ")}
               </Badge>
             </button>

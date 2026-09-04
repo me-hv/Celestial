@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Clock } from "lucide-react";
 import { timelineRepo } from "@/domain/timeline/timeline-repository";
@@ -10,7 +10,7 @@ import { TimelineVisualizer } from "@/features/timeline/components/TimelineVisua
 import { TimelineListView } from "@/features/timeline/components/TimelineListView";
 import { Badge } from "@/components/ui/badge";
 
-export default function UniversalTimelinePage() {
+function UniversalTimelineContent() {
   const searchParams = useSearchParams();
   const initialDomain = searchParams.get("domain") as TemporalDomain | null;
   const initialTarget = searchParams.get("target") || undefined;
@@ -78,5 +78,13 @@ export default function UniversalTimelinePage() {
         <TimelineListView events={filteredEvents} />
       )}
     </div>
+  );
+}
+
+export default function UniversalTimelinePage() {
+  return (
+    <Suspense fallback={<div className="flex-1 min-h-screen bg-celestial-void p-8 font-mono text-xs text-celestial-subtle">Loading Timeline...</div>}>
+      <UniversalTimelineContent />
+    </Suspense>
   );
 }

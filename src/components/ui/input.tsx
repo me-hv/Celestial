@@ -17,7 +17,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <input
           type={type}
           className={cn(
-            "flex h-11 w-full rounded-lg border border-celestial-border/70 bg-celestial-surface/80 px-4 py-2 text-sm text-celestial-starlight placeholder:text-celestial-subtle/60 focus:border-celestial-cyan focus:outline-none focus:ring-1 focus:ring-celestial-cyan disabled:cursor-not-allowed disabled:opacity-50 transition-all font-sans",
+            "flex h-11 w-full rounded-xl border border-white/[0.1] bg-celestial-surface/75 px-4 py-2 text-sm text-celestial-starlight placeholder:text-celestial-subtle/50 backdrop-blur-md focus:border-celestial-cyan/80 focus:outline-none focus:ring-1 focus:ring-celestial-cyan/50 disabled:cursor-not-allowed disabled:opacity-50 transition-all font-sans",
             icon && "pl-11",
             className
           )}
@@ -30,3 +30,4 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = "Input";
+

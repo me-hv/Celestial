@@ -22,31 +22,31 @@ export const GalaxyTelemetryPanel: React.FC<GalaxyTelemetryPanelProps> = ({
 
   return (
     <div
-      className={`bg-slate-950/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col gap-5 overflow-y-auto max-h-[85vh] text-slate-200 ${className}`}
+      className={`bg-celestial-surface/95 backdrop-blur-2xl border border-white/[0.1] rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col gap-4 overflow-y-auto max-h-[60vh] sm:max-h-[calc(100vh-14rem)] text-celestial-starlight font-sans ${className}`}
     >
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
+      <div className="flex items-start justify-between gap-3 border-b border-white/[0.08] pb-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <GalaxyMorphologyBadge
               morphologyClass={galaxy.morphology.class}
               hubbleType={galaxy.morphology.hubbleDeVaucouleurs}
             />
             {galaxy.groupMembership && (
-              <span className="text-[10px] uppercase font-mono tracking-wider text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full">
+              <span className="text-[10px] uppercase font-mono tracking-wider text-celestial-cyan bg-celestial-cyan/10 border border-celestial-cyan/30 px-2 py-0.5 rounded-full">
                 {galaxy.groupMembership.groupName}
               </span>
             )}
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-tight">{galaxy.name}</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight font-mono">{galaxy.name}</h2>
           {galaxy.standardDesignation && (
-            <p className="text-xs font-mono text-slate-400 mt-0.5">{galaxy.standardDesignation}</p>
+            <p className="text-xs font-mono text-celestial-subtle mt-0.5">{galaxy.standardDesignation}</p>
           )}
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
+            className="text-celestial-subtle hover:text-white p-1.5 rounded-xl hover:bg-white/[0.06] transition"
             aria-label="Close panel"
           >
             ✕
@@ -55,10 +55,10 @@ export const GalaxyTelemetryPanel: React.FC<GalaxyTelemetryPanelProps> = ({
       </div>
 
       {/* Summary */}
-      <p className="text-sm text-slate-300 leading-relaxed">{galaxy.summary}</p>
+      <p className="text-xs sm:text-sm text-celestial-subtle leading-relaxed">{galaxy.summary}</p>
 
       {/* Primary Extragalactic Telemetry */}
-      <div className="grid grid-cols-2 gap-3 bg-slate-900/60 border border-white/5 rounded-xl p-4">
+      <div className="grid grid-cols-2 gap-2.5 bg-celestial-deep/60 border border-white/[0.06] rounded-xl p-3 sm:p-3.5">
         <div>
           <span className="text-[11px] font-mono text-slate-400 uppercase tracking-wider block">
             Distance

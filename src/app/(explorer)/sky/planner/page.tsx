@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Container } from "@/components/ui/container";
@@ -11,7 +11,7 @@ import { ObservationPlannerCard } from "@/features/sky/components/ObservationPla
 import { ObserverLocationModal } from "@/features/sky/components/ObserverLocationModal";
 import { Telescope, MapPin, ArrowLeft } from "lucide-react";
 
-export default function ObservationPlannerPage() {
+function ObservationPlannerContent() {
   const searchParams = useSearchParams();
   const [location, setLocation] = useState<ObserverLocation>(PRESET_OBSERVER_LOCATIONS[0]);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
@@ -95,5 +95,13 @@ export default function ObservationPlannerPage() {
         />
       </Container>
     </div>
+  );
+}
+
+export default function ObservationPlannerPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 min-h-screen bg-celestial-void p-8 font-mono text-xs text-celestial-subtle">Loading Planner...</div>}>
+      <ObservationPlannerContent />
+    </Suspense>
   );
 }

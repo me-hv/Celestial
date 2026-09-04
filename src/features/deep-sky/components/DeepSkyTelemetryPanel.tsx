@@ -47,10 +47,10 @@ export function DeepSkyTelemetryPanel({
   return (
     <aside
       aria-label="Deep Sky Telemetry Details"
-      className="absolute top-20 right-4 z-30 w-full max-w-sm rounded-2xl border border-celestial-muted bg-celestial-surface/90 backdrop-blur-xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-200"
+      className="absolute inset-x-3 bottom-4 top-auto sm:inset-x-auto sm:top-20 sm:bottom-auto sm:right-4 z-30 w-auto sm:w-full sm:max-w-sm max-h-[60vh] sm:max-h-[calc(100vh-14rem)] flex flex-col rounded-2xl border border-white/[0.1] bg-celestial-surface/95 backdrop-blur-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 sm:slide-in-from-right-4 duration-200"
     >
       {/* Header */}
-      <div className="flex items-start justify-between p-4 border-b border-celestial-muted/80 bg-celestial-deep/60">
+      <div className="flex items-start justify-between p-4 border-b border-white/[0.08] bg-celestial-deep/80 shrink-0">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold font-mono text-celestial-starlight tracking-tight">
@@ -68,7 +68,7 @@ export function DeepSkyTelemetryPanel({
         <button
           onClick={onClose}
           aria-label="Close telemetry panel"
-          className="p-1 rounded-lg text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted transition-colors"
+          className="p-1.5 rounded-xl text-celestial-subtle hover:text-celestial-starlight hover:bg-white/[0.06] transition-colors"
         >
           <X className="w-4 h-4" />
         </button>

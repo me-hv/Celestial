@@ -27,9 +27,9 @@ export function CosmicStructureTelemetryPanel({
   const galaxyCount = structure.physical.galaxyCountEstimated?.value;
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-slate-950/80 p-5 shadow-2xl backdrop-blur-xl max-w-md w-full text-slate-200">
+    <div className="flex flex-col gap-4 rounded-2xl border border-white/[0.1] bg-celestial-surface/95 p-4 sm:p-5 shadow-2xl backdrop-blur-2xl max-w-md w-full text-celestial-starlight">
       {/* Header */}
-      <div className="flex items-start justify-between gap-3 border-b border-white/5 pb-3">
+      <div className="flex items-start justify-between gap-3 border-b border-white/[0.08] pb-3">
         <div>
           <CosmicStructureTypeBadge
             type={structure.type}
@@ -39,7 +39,7 @@ export function CosmicStructureTelemetryPanel({
             {structure.name}
           </h2>
           {structure.standardDesignation && (
-            <span className="text-xs text-slate-400 font-mono block">
+            <span className="text-xs text-celestial-subtle font-mono block">
               {structure.standardDesignation}
             </span>
           )}
@@ -47,7 +47,7 @@ export function CosmicStructureTelemetryPanel({
         {onClose && (
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+            className="rounded-xl p-1.5 text-celestial-subtle hover:bg-white/[0.06] hover:text-white transition-colors"
           >
             ✕
           </button>
@@ -55,10 +55,10 @@ export function CosmicStructureTelemetryPanel({
       </div>
 
       {/* Summary */}
-      <p className="text-xs text-slate-300 leading-relaxed font-sans">{structure.summary}</p>
+      <p className="text-xs text-celestial-subtle leading-relaxed font-sans">{structure.summary}</p>
 
       {/* Key Metric Cards */}
-      <div className="grid grid-cols-2 gap-2.5 bg-slate-900/60 border border-white/5 rounded-xl p-3.5 text-xs font-mono">
+      <div className="grid grid-cols-2 gap-2.5 bg-celestial-deep/60 border border-white/[0.06] rounded-xl p-3 sm:p-3.5 text-xs font-mono">
         <div>
           <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
             Distance

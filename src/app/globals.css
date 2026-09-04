@@ -4,31 +4,61 @@
 
 :root {
   --background: #030712;
-  --foreground: #f9fafb;
+  --foreground: #f8fafc;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.05) 0%, rgba(3, 7, 18, 0) 50%),
+    radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.03) 0%, rgba(3, 7, 18, 0) 40%);
+  background-attachment: fixed;
   font-feature-settings: "rlig" 1, "calt" 1;
   overflow-x: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* Custom scrollbar */
+/* Custom Deep-Space Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #030712;
+  background: rgba(3, 7, 18, 0.8);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f2937;
-  border-radius: 3px;
+  background: rgba(51, 65, 85, 0.6);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: rgba(56, 189, 248, 0.5);
+}
+
+/* Utility to hide scrollbar while preserving scroll functionality */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Touch Support */
+@media (max-width: 768px) {
+  input, select, textarea, button {
+    font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+  }
 }

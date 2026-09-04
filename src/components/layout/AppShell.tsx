@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { AppSidebar } from "./AppSidebar";
 import { ContextBar } from "./ContextBar";
 import { GlobalSearchDialog } from "../shared/GlobalSearchDialog";
@@ -12,6 +13,7 @@ export interface AppShellProps {
 const SIDEBAR_STORAGE_KEY = "celestial-sidebar-state";
 
 export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
   // Sidebar expanded / collapsed state
   const [isExpanded, setIsExpanded] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -29,6 +31,11 @@ export function AppShell({ children }: AppShellProps) {
     }
   }, []);
 
+  // Automatically close mobile menu on route changes
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname]);
+
   const handleToggleExpand = useCallback(() => {
     setIsExpanded((prev) => {
       const next = !prev;
@@ -41,21 +48,25 @@ export function AppShell({ children }: AppShellProps) {
     });
   }, []);
 
-  // Global Keyboard Shortcut (⌘K / Ctrl+K)
+  // Global Keyboard Shortcuts (⌘K / Ctrl+K and Escape to close drawer)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setIsSearchOpen((prev) => !prev);
+      } else if (e.key === "Escape") {
+        if (isMobileOpen) {
+          setIsMobileOpen(false);
+        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [isMobileOpen]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-celestial-void font-sans text-celestial-starlight">
+    <div className="flex h-screen h-[100dvh] w-full overflow-hidden bg-celestial-void font-sans text-celestial-starlight antialiased">
       {/* Left Application Sidebar */}
       <AppSidebar
         isExpanded={isExpanded}
@@ -65,7 +76,7 @@ export function AppShell({ children }: AppShellProps) {
       />
 
       {/* Main Viewport Workspace */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden relative">
         {/* Contextual Top Bar */}
         <ContextBar
           onOpenMobileMenu={() => setIsMobileOpen(true)}
@@ -73,7 +84,7 @@ export function AppShell({ children }: AppShellProps) {
         />
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden relative">
+        <main className="flex-1 flex flex-col min-h-0 min-w-0 overflow-y-auto overflow-x-hidden relative">
           {children}
         </main>
       </div>
@@ -83,3 +94,4 @@ export function AppShell({ children }: AppShellProps) {
     </div>
   );
 }
+

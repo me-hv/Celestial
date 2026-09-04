@@ -38,6 +38,13 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
       if (segments[1] === "events") parts.push({ label: "Astronomical Events" });
       else if (segments[1] === "planner") parts.push({ label: "Session Planner" });
       else if (segments[1] === "where-is") parts.push({ label: `Where Is ${segments[2] || ""}` });
+    } else if (segments[0] === "live") {
+      parts.push({ label: "Live Command" });
+    } else if (segments[0] === "timeline") {
+      parts.push({ label: "Scientific Timeline" });
+      if (segments[1]) parts.push({ label: segments[1] });
+    } else if (segments[0] === "space-weather") {
+      parts.push({ label: "Space Weather" });
     } else if (segments[0] === "stars") {
       parts.push({ label: "Stars Catalog", href: "/stars" });
       if (segments[1]) parts.push({ label: segments[1] });
@@ -72,8 +79,21 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
       else if (segments[1]) parts.push({ label: segments[1] });
     } else if (segments[0] === "missions") {
       parts.push({ label: "Space Missions", href: "/missions" });
+      if (segments[1]) parts.push({ label: segments[1] });
     } else if (segments[0] === "objects") {
       parts.push({ label: "Astronomical Objects", href: "/objects" });
+      if (segments[1]) parts.push({ label: segments[1] });
+    } else if (segments[0] === "research") {
+      parts.push({ label: "Research Hub", href: "/research" });
+      if (segments[1]) parts.push({ label: segments[1] });
+    } else if (segments[0] === "observatories") {
+      parts.push({ label: "Observatories", href: "/observatories" });
+      if (segments[1]) parts.push({ label: segments[1] });
+    } else if (segments[0] === "organizations") {
+      parts.push({ label: "Organizations", href: "/organizations" });
+      if (segments[1]) parts.push({ label: segments[1] });
+    } else if (segments[0] === "datasets") {
+      parts.push({ label: "Datasets", href: "/datasets" });
       if (segments[1]) parts.push({ label: segments[1] });
     } else {
       segments.forEach((seg) => parts.push({ label: seg }));
@@ -92,6 +112,8 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
     if (pathname.startsWith("/cosmic-time")) return "4D Spacetime (0–13.8 Gyr)";
     if (pathname.startsWith("/observable-universe")) return "Cosmic Horizon (0–46.5 Gly)";
     if (pathname.startsWith("/sky")) return "Ground Observer (Alt/Az)";
+    if (pathname.startsWith("/live")) return "Real-Time Telemetry";
+    if (pathname.startsWith("/timeline")) return "Cosmic Timeline";
     return null;
   };
 
@@ -99,39 +121,39 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
 
   return (
     <header
-      className={`h-14 border-b border-celestial-muted/60 bg-celestial-void/70 backdrop-blur-md px-4 flex items-center justify-between z-20 shrink-0 select-none ${className}`}
+      className={`h-14 border-b border-white/[0.07] bg-celestial-deep/80 backdrop-blur-xl px-3 sm:px-4 flex items-center justify-between z-20 shrink-0 select-none ${className}`}
     >
       {/* Left: Mobile Drawer Trigger + Breadcrumbs */}
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={onOpenMobileMenu}
-          className="md:hidden p-1.5 rounded-lg text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted/50 focus:outline-none"
+          className="md:hidden p-2 rounded-xl text-celestial-subtle hover:text-celestial-starlight hover:bg-white/[0.06] focus:outline-none transition shrink-0"
           aria-label="Open Navigation Menu"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         {/* Dynamic Breadcrumbs */}
-        <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs font-mono">
+        <nav aria-label="Breadcrumbs" className="flex items-center gap-1 sm:gap-1.5 text-xs font-mono min-w-0">
           <Link
             href="/"
-            className="text-celestial-subtle hover:text-celestial-cyan transition-colors font-semibold hidden sm:inline"
+            className="text-celestial-subtle hover:text-celestial-cyan transition-colors font-semibold hidden sm:inline shrink-0"
           >
             CELESTIAL
           </Link>
 
           {breadcrumbs.map((crumb, idx) => (
             <React.Fragment key={idx}>
-              <ChevronRight className="w-3.5 h-3.5 text-celestial-muted hidden sm:inline shrink-0" />
+              <ChevronRight className="w-3.5 h-3.5 text-celestial-subtle/50 hidden sm:inline shrink-0" />
               {crumb.href ? (
                 <Link
                   href={crumb.href}
-                  className="text-celestial-subtle hover:text-celestial-starlight transition-colors truncate max-w-[140px] sm:max-w-[200px]"
+                  className="text-celestial-subtle hover:text-celestial-starlight transition-colors truncate max-w-[100px] sm:max-w-[160px] md:max-w-[200px]"
                 >
                   {crumb.label}
                 </Link>
               ) : (
-                <span className="text-celestial-starlight font-semibold truncate max-w-[160px] sm:max-w-[240px]">
+                <span className="text-celestial-starlight font-semibold truncate max-w-[120px] sm:max-w-[200px] md:max-w-[260px]">
                   {crumb.label}
                 </span>
               )}
@@ -141,11 +163,11 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
       </div>
 
       {/* Right: Scale Indicator + Global Search Trigger */}
-      <div className="flex items-center gap-2.5 shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         {scaleBadge && (
           <Badge
-            variant="outline"
-            className="hidden lg:inline-flex font-mono text-[10px] uppercase py-0.5 px-2 bg-celestial-cyan/10 text-celestial-cyan border-celestial-cyan/30"
+            variant="cyan"
+            className="hidden lg:inline-flex font-mono text-[10px] uppercase py-0.5 px-2 bg-celestial-cyan/10 text-celestial-cyan border-celestial-cyan/30 shadow-sm shadow-celestial-cyan/10"
           >
             <Sparkles className="w-3 h-3 mr-1" />
             {scaleBadge}
@@ -157,11 +179,12 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
           onClick={onOpenSearch}
           variant="outline"
           size="sm"
-          className="h-8 px-2.5 sm:px-3 text-xs font-mono text-celestial-subtle hover:text-celestial-starlight border-celestial-muted/80 hover:border-celestial-cyan/60 bg-celestial-surface/60 backdrop-blur-sm gap-2"
+          className="h-9 px-2.5 sm:px-3 text-xs font-mono text-celestial-subtle hover:text-celestial-starlight border-white/[0.1] hover:border-celestial-cyan/60 bg-celestial-surface/70 hover:bg-celestial-surface backdrop-blur-md gap-2 rounded-xl transition shadow-sm"
+          aria-label="Universal Search (Command+K)"
         >
           <Search className="w-3.5 h-3.5 text-celestial-cyan" />
           <span className="hidden sm:inline">Search universe...</span>
-          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded bg-celestial-muted/70 text-[10px] text-celestial-subtle border border-celestial-muted">
+          <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded bg-white/[0.08] text-[10px] text-celestial-subtle border border-white/[0.1]">
             ⌘K
           </kbd>
         </Button>
@@ -169,3 +192,4 @@ export function ContextBar({ onOpenMobileMenu, onOpenSearch, className = "" }: C
     </header>
   );
 }
+

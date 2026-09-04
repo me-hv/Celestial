@@ -33,7 +33,7 @@ export function ExplorerControls({
   return (
     <div className="flex flex-col md:flex-row items-center justify-between gap-3 w-full">
       {/* Body Selector Chips */}
-      <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 md:pb-0 scrollbar-none">
+      <div className="flex items-center gap-1.5 overflow-x-auto max-w-full pb-1 md:pb-0 scrollbar-none py-1">
         {objects.map((obj) => {
           const isSelected = obj.id === selectedObjectId;
           const isStar = obj.classification.code === "STAR";
@@ -42,12 +42,12 @@ export function ExplorerControls({
             <button
               key={obj.id}
               onClick={() => onSelectObject(obj)}
-              className={`px-3 py-1 rounded-lg text-xs font-mono transition-all whitespace-nowrap border ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-mono transition-all whitespace-nowrap border ${
                 isSelected
-                  ? "bg-celestial-cyan text-celestial-void font-bold border-celestial-cyan shadow-sm"
+                  ? "bg-celestial-cyan text-celestial-void font-bold border-celestial-cyan shadow-sm shadow-celestial-cyan/20"
                   : isStar
-                    ? "bg-celestial-amber/15 text-celestial-amber border-celestial-amber/30 hover:bg-celestial-amber/25"
-                    : "bg-celestial-surface text-celestial-subtle border-celestial-muted/80 hover:text-celestial-starlight hover:border-celestial-muted"
+                    ? "bg-amber-500/15 text-amber-300 border-amber-500/30 hover:bg-amber-500/25"
+                    : "bg-celestial-surface/80 text-celestial-subtle border-white/[0.08] hover:text-celestial-starlight hover:border-white/[0.16]"
               }`}
             >
               {obj.canonicalName}

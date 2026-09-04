@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Sparkles, Search, ListFilter, Plus, BookOpen } from "lucide-react";
 import { TargetIntelligenceEngine } from "@/lib/astronomy/research/target-intelligence-engine";
@@ -24,7 +24,7 @@ const SUGGESTED_TARGETS = [
   { slug: "w-m-keck-observatory", name: "W. M. Keck Observatory", domain: "OBSERVATORY" },
 ];
 
-export default function ResearchPage() {
+function ResearchContent() {
   const searchParams = useSearchParams();
   const initialTargetParam = searchParams.get("target") || "m31-andromeda-galaxy";
 
@@ -209,5 +209,13 @@ export default function ResearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResearchPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 min-h-screen bg-celestial-void p-8 font-mono text-xs text-celestial-subtle">Loading Research Workspace...</div>}>
+      <ResearchContent />
+    </Suspense>
   );
 }

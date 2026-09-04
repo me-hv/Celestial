@@ -127,16 +127,16 @@ export default function ObservatoriesPage() {
             </div>
 
             <div className="flex items-center justify-between pt-4 mt-4 border-t border-celestial-muted/40">
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full gap-1.5 font-mono text-xs justify-between group-hover:border-celestial-cyan/50"
-              >
-                <Link href={`/observatories/${obs.slug}`}>
+              <Link href={`/observatories/${obs.slug}`} className="w-full">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full gap-1.5 font-mono text-xs justify-between group-hover:border-celestial-cyan/50"
+                >
                   <span>Inspect Facility</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
+                </Button>
+              </Link>
             </div>
           </div>
         ))}

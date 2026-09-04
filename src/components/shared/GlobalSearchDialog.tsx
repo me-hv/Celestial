@@ -233,32 +233,32 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-celestial-void/80 backdrop-blur-md animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-8 sm:pt-20 px-3 sm:px-4 bg-celestial-void/80 backdrop-blur-md animate-in fade-in duration-150"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Universal Search Command Dialog"
     >
       <div
-        className="w-full max-w-2xl rounded-2xl border border-celestial-muted/80 bg-celestial-surface/95 backdrop-blur-2xl shadow-2xl overflow-hidden font-sans flex flex-col max-h-[80vh]"
+        className="w-full max-w-2xl rounded-2xl border border-white/[0.1] bg-celestial-surface/95 backdrop-blur-2xl shadow-2xl overflow-hidden font-sans flex flex-col max-h-[85vh] max-h-[85dvh]"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={handleKeyDown}
       >
         {/* Search Input Bar */}
-        <div className="relative flex items-center border-b border-celestial-muted/70 px-4 h-14">
+        <div className="relative flex items-center border-b border-white/[0.08] px-4 h-14 shrink-0 bg-celestial-surface/50">
           <Search className="w-5 h-5 text-celestial-cyan mr-3 shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search planets, stars, galaxies, epochs, constellations (e.g. Earth, Mars, TRAPPIST-1, CMB)..."
+            placeholder="Search planets, stars, galaxies, epochs, constellations..."
             className="w-full bg-transparent text-sm sm:text-base text-celestial-starlight placeholder:text-celestial-subtle/50 focus:outline-none font-sans"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="p-1 rounded-md text-celestial-subtle hover:text-celestial-starlight hover:bg-celestial-muted/60 transition"
+              className="p-1.5 rounded-lg text-celestial-subtle hover:text-celestial-starlight hover:bg-white/[0.06] transition"
               title="Clear search"
             >
               <X className="w-4 h-4" />
@@ -270,7 +270,7 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
         </div>
 
         {/* Results Container */}
-        <div ref={resultsContainerRef} className="overflow-y-auto p-2 space-y-1 max-h-[460px]">
+        <div ref={resultsContainerRef} className="overflow-y-auto p-2 space-y-1 max-h-[480px]">
           {results.length > 0 ? (
             results.map((item, index) => {
               const isSelected = index === selectedIndex;
@@ -281,14 +281,14 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
                   onMouseEnter={() => setSelectedIndex(index)}
                   className={`w-full flex items-center justify-between p-3 rounded-xl cursor-pointer transition-all ${
                     isSelected
-                      ? "bg-celestial-cyan/10 border border-celestial-cyan/40 text-celestial-starlight"
-                      : "hover:bg-celestial-muted/40 border border-transparent text-celestial-subtle"
+                      ? "bg-celestial-cyan/15 border border-celestial-cyan/40 text-celestial-starlight shadow-sm"
+                      : "hover:bg-white/[0.04] border border-transparent text-celestial-subtle"
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0 pr-3">
                     <div
-                      className={`p-2 rounded-lg shrink-0 ${
-                        isSelected ? "bg-celestial-cyan/20" : "bg-celestial-muted/50"
+                      className={`p-2.5 rounded-xl shrink-0 ${
+                        isSelected ? "bg-celestial-cyan/25 text-celestial-cyan" : "bg-white/[0.05]"
                       }`}
                     >
                       {getTypeIcon(item.objectType)}
@@ -341,17 +341,20 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
               </p>
             </div>
           ) : (
-            <div className="p-4 space-y-3">
-              <div className="text-[11px] font-mono uppercase tracking-wider text-celestial-subtle font-semibold px-2">
+            <div className="p-3 sm:p-4 space-y-3">
+              <div className="text-[11px] font-mono uppercase tracking-widest text-celestial-subtle font-semibold px-1">
                 Suggested Scales & Catalogs
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {[
+                  { name: "Live Command", href: "/live", type: "MISSION" },
+                  { name: "Timeline", href: "/timeline", type: "COSMIC_EPOCH" },
                   { name: "Solar System", href: "/explore", type: "PLANET" },
                   { name: "Live Sky", href: "/sky", type: "CONSTELLATION" },
                   { name: "Star Catalog", href: "/stars", type: "STAR" },
                   { name: "TRAPPIST-1", href: "/systems/trappist-1", type: "EXOPLANET" },
                   { name: "Milky Way", href: "/milky-way", type: "GALAXY" },
+                  { name: "Cosmic Web", href: "/cosmic-web", type: "COSMIC_STRUCTURE" },
                   { name: "Observable Universe", href: "/observable-universe", type: "CMB" },
                 ].map((sug) => (
                   <button
@@ -360,7 +363,7 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
                       onClose();
                       router.push(sug.href);
                     }}
-                    className="flex items-center gap-2 p-2.5 rounded-lg border border-celestial-muted/60 bg-celestial-muted/20 hover:bg-celestial-muted/50 text-left transition"
+                    className="flex items-center gap-2.5 p-2.5 sm:p-3 rounded-xl border border-white/[0.07] bg-white/[0.03] hover:bg-white/[0.08] hover:border-celestial-cyan/30 text-left transition active:scale-[0.98]"
                   >
                     {getTypeIcon(sug.type as SearchResultItem["objectType"])}
                     <span className="text-xs text-celestial-starlight font-medium truncate">
@@ -374,31 +377,31 @@ export function GlobalSearchDialog({ isOpen, onClose }: GlobalSearchDialogProps)
         </div>
 
         {/* Footer Shortcut Hints */}
-        <div className="border-t border-celestial-muted/60 px-4 py-2.5 bg-celestial-void/60 flex items-center justify-between text-[11px] font-mono text-celestial-subtle">
+        <div className="border-t border-white/[0.08] px-4 py-2.5 bg-celestial-deep/80 flex items-center justify-between text-[11px] font-mono text-celestial-subtle shrink-0">
           <div className="flex items-center gap-3">
-            <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-celestial-muted/80 border border-celestial-muted text-[10px]">
+            <span className="hidden sm:inline">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-[10px]">
                 ↑
               </kbd>{" "}
-              <kbd className="px-1.5 py-0.5 rounded bg-celestial-muted/80 border border-celestial-muted text-[10px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-[10px]">
                 ↓
               </kbd>{" "}
-              to navigate
+              navigate
             </span>
-            <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-celestial-muted/80 border border-celestial-muted text-[10px]">
+            <span className="hidden sm:inline">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-[10px]">
                 ↵
               </kbd>{" "}
-              to open
+              open
             </span>
             <span>
-              <kbd className="px-1.5 py-0.5 rounded bg-celestial-muted/80 border border-celestial-muted text-[10px]">
+              <kbd className="px-1.5 py-0.5 rounded bg-white/[0.08] border border-white/[0.1] text-[10px]">
                 ESC
               </kbd>{" "}
-              to close
+              close
             </span>
           </div>
-          <span className="hidden sm:inline text-celestial-cyan">CELESTIAL ATLAS SEARCH</span>
+          <span className="text-celestial-cyan font-bold tracking-wider">CELESTIAL ATLAS</span>
         </div>
       </div>
     </div>
