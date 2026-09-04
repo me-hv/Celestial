@@ -5,7 +5,8 @@ import { env } from "../config/env";
 let supabaseClient: SupabaseClient<Database> | null = null;
 
 /**
- * Returns a typed Supabase client instance or null if credentials are not configured
+ * Returns a typed Supabase client instance or null if credentials are not configured.
+ * Safely handles missing optional database credentials without throwing runtime errors.
  */
 export function getSupabaseClient(): SupabaseClient<Database> | null {
   if (supabaseClient) {
@@ -19,11 +20,16 @@ export function getSupabaseClient(): SupabaseClient<Database> | null {
     return null;
   }
 
-  supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
-    auth: {
-      persistSession: false,
-    },
-  });
+  try {
+    supabaseClient = createClient<Database>(supabaseUrl, supabaseKey, {
+      auth: {
+        persistSession: false,
+      },
+    });
 
-  return supabaseClient;
+    return supabaseClient;
+  } catch (err) {
+    console.warn("⚠️ Failed to initialize Supabase client with provided credentials:", err);
+    return null;
+  }
 }
